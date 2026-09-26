@@ -1,0 +1,10 @@
+project_id = "mdlkexampleprojectref"
+
+[functions.send-booking-confirmation]
+verify_jwt = false
+
+[functions.cancel-booking]
+verify_jwt = false
+
+[functions.session-reminders]
+verify_jwt = false

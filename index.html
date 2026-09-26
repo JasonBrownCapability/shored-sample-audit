@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meadowlark: enforcement-tier audit</title>
+<meta name="description" content="Meadowlark: enforcement-tier audit. Sample report on a synthetic codebase. Shored, shored.dev.">
+<style>:root {
+  --bg: #fbfbfa;
+  --fg: #1c1f24;
+  --muted: #5b6270;
+  --heading: #12315c;
+  --accent: #b5541c;
+  --rule: #e2e4e8;
+  --code-bg: #f1f2f4;
+  --table-stripe: #f5f6f8;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #13161b;
+    --fg: #e6e8eb;
+    --muted: #9aa3b2;
+    --heading: #9dbce8;
+    --accent: #e08a52;
+    --rule: #2b313b;
+    --code-bg: #1d222a;
+    --table-stripe: #191d24;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Geist, "Geist Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+}
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 4rem;
+}
+h1, h2, h3, h4 { color: var(--heading); line-height: 1.2; font-weight: 600; }
+h1 { font-size: 2rem; margin: 0 0 1rem; }
+h2 { font-size: 1.5rem; margin: 2.5rem 0 0.75rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
+h3 { font-size: 1.2rem; margin: 2rem 0 0.5rem; }
+h4 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
+p, ul, ol { margin: 0 0 1rem; }
+li { margin-bottom: 0.3rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, pre {
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+code { background: var(--code-bg); padding: 0.1em 0.3em; border-radius: 3px; overflow-wrap: anywhere; }
+pre {
+  background: var(--code-bg);
+  padding: 0.9rem 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  line-height: 1.45;
+  margin: 0 0 1.2rem;
+}
+pre code { background: none; padding: 0; font-size: 0.8rem; overflow-wrap: normal; }
+.table-wrap { overflow-x: auto; margin: 0 0 1.4rem; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--rule); }
+th { color: var(--heading); font-weight: 600; white-space: nowrap; }
+tbody tr:nth-child(even) { background: var(--table-stripe); }
+td code { white-space: normal; }
+blockquote { margin: 0 0 1rem; padding-left: 1rem; border-left: 3px solid var(--accent); color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.3rem; }
+  main { padding-top: 1.5rem; }
+}</style>
+</head>
+<body>
+<main>
+<h1>Meadowlark: enforcement-tier audit</h1>
+<p>Sample report on a synthetic codebase. Meadowlark, its founder, its studios and every key in its repository are fictional. The codebase is at <code>samples/meadowlark/</code> in this repository and was seeded with the failure modes that AI coding agents leave behind; the report was written against the tree, not the seed list. It is the report a founder receives at the end of the £550 day.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prepared for</td>
+<td>The founder of Meadowlark (class bookings and deposits for small pottery studios)</td>
+</tr>
+<tr>
+<td>Prepared by</td>
+<td>Jason Brown, Shored</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>26 September 2026</td>
+</tr>
+<tr>
+<td>Inputs</td>
+<td>Repository at commit <code>ddb7519</code> (42 files, 33 of them source), read-only. <code>supabase/schema-dump.sql</code>, a dump of the production schema the founder pulled on 19 September 2026. No production data was read.</td>
+</tr>
+<tr>
+<td>Stack</td>
+<td>React 18, Vite, TypeScript, Tailwind, Supabase (Postgres, Auth, three Deno edge functions), Resend, OpenAI. Built with Lovable.</td>
+</tr>
+<tr>
+<td>Paths</td>
+<td>Relative to the Meadowlark repository root. <code>file:12-15</code> means lines 12 to 15.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>1. Summary</h2>
+<p>Meadowlark works, and the owner-facing half of it is protected the way the README says: a studio owner cannot see another studio's classes, customers or notes, because the database refuses to show them. The public booking page is where the problems are. To make the booking form, the seat counter, the returning-customer autofill and the gift-voucher box work without errors, four things were opened that should not have been: the bookings table can be read and edited by anyone holding the app's public key (which is everyone who has loaded the page), a database function hands back every customer of every studio to anyone who asks, the gift-voucher list is readable by anyone, and the waitlist has no protection at all. Separately, the secret key that bypasses every one of these protections is shipped inside the app's JavaScript, alongside the OpenAI key, and both are in the git history. None of this needs a rewrite. Each item has a fix of between ten minutes and two days, and the sprint that closes all of them fits inside the fixed ten-day total.</p>
+<p>The three numbers:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Load-bearing quirks found</th>
+<th>Tier 1 (enforced by a mechanism)</th>
+<th>Tier 2 (pinned by a test)</th>
+<th>Tier 3 (prose only)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>23</td>
+<td>7</td>
+<td>1</td>
+<td>15</td>
+</tr>
+</tbody>
+</table></div>
+<p>The number that matters is 15. Of those, 7 are live exposures today; 8 are places where the next prompt to Lovable, or the next concurrent customer, produces wrong-but-plausible data without anyone noticing.</p>
+<h2>2. If you do one thing today</h2>
+<p>Revoke the secret key that is in the browser bundle.</p>
+<p><code>.env:4</code> holds <code>VITE_SUPABASE_SERVICE_ROLE_KEY</code>. Anything prefixed <code>VITE_</code> is compiled into the JavaScript that every visitor downloads, and <code>src/integrations/supabase/admin.ts:8-10</code> uses it to build a client that bypasses row-level security. Anyone who opens the browser's developer tools on <code>/book/&lt;any-studio&gt;</code> can copy that key and then read, change or delete every row in every table, and list or create users through the Auth admin API. The <code>/admin</code> route check at <code>src/App.tsx:15-27</code> does not help: it decides which React component to show, and the key is in the bundle whether or not the component renders.</p>
+<p>The fix, about 20 minutes:</p>
+<ol>
+<li>Supabase dashboard, Project Settings, API Keys. Find the secret key whose value matches <code>.env:4</code> and revoke it. The key is in the newer <code>sb_secret_</code> format, so it can be revoked on its own without touching the publishable key or signing anyone out. (If a project is still on legacy JWT keys, the equivalent is rotating the JWT secret, which also invalidates the anon key and logs every user out; that is not the case here.)</li>
+<li>Delete <code>VITE_SUPABASE_SERVICE_ROLE_KEY</code> from <code>.env</code>, from the Lovable project's environment settings and from the hosting environment. Delete <code>src/integrations/supabase/admin.ts</code>. Publish.</li>
+<li>The three edge functions are unaffected: they read the <code>SUPABASE_SERVICE_ROLE_KEY</code> that Supabase injects into the function runtime (<code>supabase/functions/*/index.ts</code>), which is a different credential.</li>
+</ol>
+<p>After step 2 the <code>/admin</code> overview stops working until sprint item 1 rebuilds it behind an edge function. That is the right trade.</p>
+<p>Same afternoon, in the SQL editor, each under two minutes and none of them breaks the booking page:</p>
+<ul>
+<li><code>drop function public.lookup_customer(text);</code> closes the cross-studio customer export (finding 3). The autofill at <code>src/components/BookingForm.tsx:31</code> starts returning nothing, and the form ignores that.</li>
+<li>The waitlist SQL under finding 5 turns on row-level security for <code>waitlist</code> and keeps the join-waitlist button working.</li>
+<li>Rotate the OpenAI key at platform.openai.com and remove <code>VITE_OPENAI_API_KEY</code> from the same three places. The "Write it for me" button stops working until sprint item 1. If that button matters more than the spend risk, leave it for the sprint but set a hard monthly limit on the OpenAI account today.</li>
+</ul>
+<p>The bookings policy (finding 2) is the one live exposure that cannot be closed in ten minutes without breaking the booking page, because three client call sites depend on it. Section 3 gives the interim option and what it costs.</p>
+<h2>3. Tier 3: protected by prose alone</h2>
+<p>Sorted by blast radius. "Live" means the violation has already happened and is exploitable today. Sizes are for the promotion: S is half a day, M one day, L two days.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Quirk (the rule that should hold)</th>
+<th>Where it lives</th>
+<th>What it costs if violated</th>
+<th>Cheapest adequate promotion</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>The service-role key never reaches the browser</td>
+<td><code>.env:4</code>, <code>src/integrations/supabase/admin.ts:8-10</code>, <code>src/pages/admin/Overview.tsx:2,12,20</code></td>
+<td>Live. Every row of every table readable and writable; Auth admin API open</td>
+<td>Revoke, delete the admin client, rebuild <code>/admin</code> as an edge function behind a <code>platform_admins</code> table; CI grep that fails on <code>VITE_*SECRET|SERVICE_ROLE|API_KEY</code></td>
+<td>M</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Bookings are visible only to the studio that owns them</td>
+<td><code>supabase/migrations/20250709101200_fix_booking_insert.sql:2-5</code>; dependents <code>BookingForm.tsx:77-92</code>, <code>src/pages/Book.tsx:44-56</code>, <code>src/pages/Manage.tsx:18-22</code></td>
+<td>Live. Name, email, phone and notes of every booking at every studio readable; any booking can be confirmed, cancelled or deleted by anyone</td>
+<td>Drop the policy; move the write into <code>create_booking()</code>, the seat count into a view, the manage page into <code>get_booking_by_token()</code></td>
+<td>L</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Customers are visible only to their own studio</td>
+<td><code>supabase/migrations/20250715163000_lookup_customer.sql:4-14</code> (<code>ilike</code> at 13); called at <code>BookingForm.tsx:31</code></td>
+<td>Live. <code>rpc/lookup_customer</code> with <code>p_email = '%'</code> returns every customer row in the database, 1,000 per page</td>
+<td>Drop the function; revoke default execute on new functions</td>
+<td>S</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Gift-voucher codes and balances are visible only to their studio</td>
+<td><code>supabase/schema-dump.sql:161</code> (production only); read at <code>BookingForm.tsx:41-46</code></td>
+<td>Live. Every unredeemed code, balance and purchaser email readable; free classes at any studio</td>
+<td>Drop the read policy; replace with <code>validate_voucher(code, studio_id)</code> exact-match function</td>
+<td>S</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Waitlist entries are visible only to the studio</td>
+<td><code>supabase/migrations/20250702141500_waitlist.sql:3-11</code> (no RLS); <code>Book.tsx:115</code></td>
+<td>Live. Every waitlist name and email readable and deletable</td>
+<td>Enable RLS; insert-only policy for the public, owner policy for reads</td>
+<td>S</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Secrets are never committed</td>
+<td><code>.env:1-6</code> tracked since commit <code>f71d3ea</code>; <code>.gitignore:22</code> added in <code>ddb7519</code></td>
+<td>Live. Four credentials in every clone, fork and Lovable export of the repository, for ever</td>
+<td><code>git rm --cached .env</code>, rotate, <code>.env.example</code>, gitleaks in CI</td>
+<td>S</td>
+</tr>
+<tr>
+<td>7</td>
+<td>The OpenAI key never reaches the browser</td>
+<td><code>src/lib/openai.ts:4,11,15</code>; <code>.env:5</code>; called from <code>src/pages/Sessions.tsx:154</code></td>
+<td>Live. Anyone can spend against the founder's OpenAI account up to its hard limit</td>
+<td>Move the call into a <code>describe-session</code> edge function with JWT verification</td>
+<td>S</td>
+</tr>
+<tr>
+<td>8</td>
+<td>A booking's total equals seats × (price + materials) − voucher</td>
+<td><code>BookingForm.tsx:63-66,86-87</code>; only guard is <code>total_pence &gt;= 0</code> at <code>20250611120000_init.sql:47</code></td>
+<td>Any caller can book at £0; the admin revenue figure (<code>Overview.tsx:29</code>) sums client-supplied numbers</td>
+<td>Compute the total inside <code>create_booking()</code>; the client's number is never stored</td>
+<td>L (shared with 9, 10)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Seats booked never exceed the class capacity</td>
+<td><code>BookingForm.tsx:70-73,115</code>; count at <code>Book.tsx:44-56</code>; same formula copied at <code>Sessions.tsx:51-53</code></td>
+<td>Two customers booking the last seat at the same time both succeed; a caller can skip the check entirely</td>
+<td><code>create_booking()</code> locks the session row and re-counts; <code>session_availability</code> view replaces both copies of the formula</td>
+<td>shared</td>
+</tr>
+<tr>
+<td>10</td>
+<td>A voucher's balance goes down when it is used</td>
+<td>Read at <code>BookingForm.tsx:41-46,64</code>; <code>voucher_code</code> stored at <code>:89</code>; no write to <code>balance_pence</code> anywhere in <code>src/</code></td>
+<td>One voucher pays for unlimited classes; the client also never checks the voucher belongs to the studio being booked</td>
+<td><code>create_booking()</code> debits the voucher in the same transaction, scoped to the studio</td>
+<td>shared</td>
+</tr>
+<tr>
+<td>11</td>
+<td>A confirmation email goes only to the person who made the booking</td>
+<td><code>supabase/functions/send-booking-confirmation/index.ts:19,36,53</code>; <code>supabase/config.toml:3-4</code></td>
+<td>Anyone can send templated emails from the studio's sending address to any recipient, with a link path of their choosing</td>
+<td>Trigger the function from a database webhook; take the recipient from the booking row</td>
+<td>M (shared with 12)</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Manage tokens and customer emails never reach the logs</td>
+<td><code>send-booking-confirmation/index.ts:18</code>; sibling <code>session-reminders/index.ts:37</code> logs the whole row including <code>manage_token</code> (selected at <code>:24</code>)</td>
+<td>Anyone with log access can cancel any upcoming booking; personal data sits in logs for the retention period</td>
+<td>Log ids only; a Deno test with a console spy pins it</td>
+<td>shared</td>
+</tr>
+<tr>
+<td>13</td>
+<td>The schema in <code>supabase/migrations/</code> is the schema in production</td>
+<td>Two tables, one column and three policies exist only in <code>schema-dump.sql:62,77-95,160-162</code>; the generated types already know them (<code>types.ts:28,66,120</code>)</td>
+<td><code>supabase db reset</code> yields a database the app cannot run against; any hardening migration written from the repo fails on production</td>
+<td>Baseline migration from the dump; CI job that applies migrations to an empty database and diffs against production</td>
+<td>M</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Customer emails are stored lower-case</td>
+<td>Trigger lowercases at <code>20250611120000_init.sql:98</code>; owner's form does not at <code>src/pages/Customers.tsx:54-59</code></td>
+<td>Duplicate customer records; <code>unique (studio_id, email)</code> at <code>init.sql:36</code> cannot catch case variants</td>
+<td><code>check (email = lower(email))</code> after a one-off clean-up</td>
+<td>S</td>
+</tr>
+<tr>
+<td>15</td>
+<td>A reminder is sent once per booking</td>
+<td><code>session-reminders/index.ts:24-50</code> selects, sends, then marks</td>
+<td>A duplicate reminder email if two runs overlap</td>
+<td>Leave as prose: one daily run, one duplicate email at worst. The claim-update is one line if the schedule ever tightens</td>
+<td>none</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.1 The service-role key in the browser bundle</h3>
+<p><code>src/integrations/supabase/admin.ts:8</code> reads <code>import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY</code> and line 10 builds a Supabase client with it. <code>src/pages/admin/Overview.tsx:2</code> imports that client and uses it at lines 12 and 20 to list every studio and the 200 most recent bookings across all of them. The comment at <code>admin.ts:4-6</code> says why: "RLS was hiding other studios' rows from the founder account, so this uses the service role key which bypasses RLS."</p>
+<p>Vite inlines every <code>VITE_</code>-prefixed variable into the production bundle. The route guard at <code>src/App.tsx:23-27</code> compares <code>user.email</code> to <code>founder@meadowlark.example</code> before rendering the page; it does nothing to the bundle, and the admin client module is imported unconditionally from <code>App.tsx:10</code>. Every visitor's browser already has the key.</p>
+<p>What it costs: the key bypasses row-level security on all seven tables, and it authorises the Auth admin endpoints (list users, create users, change passwords). The other fourteen findings in this table are moot while this one stands.</p>
+<p>Promotion (M): the steps in section 2, then rebuild the overview as an edge function.</p>
+<pre><code class="language-sql">create table public.platform_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade
+);
+alter table public.platform_admins enable row level security;
+-- No policies on purpose: only the service role, inside edge functions, reads it.
+</code></pre>
+<p>The <code>admin-overview</code> function runs with <code>verify_jwt = true</code>, calls <code>supabase.auth.getUser()</code> with the caller's token, checks the user id against <code>platform_admins</code>, and only then queries with the injected service-role key. <code>Overview.tsx</code> calls <code>supabase.functions.invoke("admin-overview")</code> instead of importing a client. Add to <code>.github/workflows/build.yml</code>:</p>
+<pre><code class="language-yaml">      - name: No secrets compiled into the bundle
+        run: &quot;! grep -rEn 'VITE_[A-Z_]*(SECRET|SERVICE_ROLE|API_KEY)' src .env.example&quot;
+</code></pre>
+<p>What I looked for before calling this prose-only: any build-time check on environment variable names (none; <code>vite.config.ts</code> has no <code>define</code> or env filtering), any test touching <code>admin.ts</code> (none; the only test file is <code>src/lib/format.test.ts</code>), any server-side gate on <code>/admin</code> (none; the gate is a React component).</p>
+<h3>3.2 Bookings readable and writable by the public</h3>
+<p><code>supabase/migrations/20250709101200_fix_booking_insert.sql</code> in full:</p>
+<pre><code class="language-sql">-- fix: allow inserts, was getting 401 from the public booking page
+create policy &quot;bookings_public_all&quot; on public.bookings
+  for all to anon, authenticated
+  using (true)
+  with check (true);
+</code></pre>
+<p><code>for all</code> grants select, insert, update and delete. <code>using (true)</code> means every row passes. The policy is live in production (<code>schema-dump.sql:159</code>). The 401 it silenced was the correct answer: the original <code>bookings_owner_all</code> policy (<code>20250611120000_init.sql:84-87</code>) only lets a studio owner touch their own rows, and the public booking page runs as <code>anon</code>.</p>
+<p>Three client sites now depend on the hole. <code>BookingForm.tsx:77-92</code> inserts the booking and reads back <code>id, manage_token</code> (line 91); <code>Book.tsx:44-56</code> reads every booking for the listed sessions to compute seats left; <code>Manage.tsx:18-22</code> reads a booking by its token. Each of these is a legitimate need met by the wrong mechanism.</p>
+<p>What it costs: with the publishable key from <code>.env:3</code> (which is meant to be public) and no login, <code>GET /rest/v1/bookings?select=*</code> returns every booking at every studio: <code>customer_name</code>, <code>customer_email</code>, <code>customer_phone</code>, <code>notes</code> (whose placeholder at <code>BookingForm.tsx:117</code> invites access needs and allergies, which is health data under UK GDPR), <code>manage_token</code>, and the amounts. <code>PATCH</code> with <code>status=confirmed</code> marks any booking paid; <code>DELETE</code> removes any booking. The insert also accepts any <code>studio_id</code>, so a booking can be filed against a studio that does not own the session.</p>
+<p>Promotion (L, covers 8, 9 and 10 as well): drop the policy and give the public page three narrow doors.</p>
+<pre><code class="language-sql">drop policy &quot;bookings_public_all&quot; on public.bookings;
+-- No policy for anon on bookings after this. Public access goes through:
+--   create_booking()        the only way to insert (section 3.8)
+--   session_availability    seats left per published session (section 3.9)
+--   get_booking_by_token()  the manage page (below)
+
+create or replace function public.get_booking_by_token(p_token text)
+returns table (
+  id uuid, customer_name text, seats integer, total_pence integer,
+  deposit_pence integer, status text, session_title text,
+  starts_at timestamptz, studio_name text
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select b.id, b.customer_name, b.seats, b.total_pence, b.deposit_pence, b.status,
+         s.title, s.starts_at, st.name
+  from public.bookings b
+  join public.sessions s on s.id = b.session_id
+  join public.studios st on st.id = b.studio_id
+  where b.manage_token = p_token;
+$$;
+revoke execute on function public.get_booking_by_token(text) from public;
+grant execute on function public.get_booking_by_token(text) to anon, authenticated;
+</code></pre>
+<p>Exact match on a 128-bit token is not enumerable; <code>ilike</code> would be (see 3.3). <code>Manage.tsx:18-22</code> becomes <code>supabase.rpc("get_booking_by_token", { p_token: token }).maybeSingle()</code>.</p>
+<p>Interim option, if the founder wants the exposure closed before the sprint reaches this item: replace the policy with insert-only and remove <code>.select("id, manage_token")</code> at <code>BookingForm.tsx:91</code> (Postgres checks select policies on <code>insert ... returning</code>, so the insert fails otherwise). Bookings keep working. Until the sprint, the seat counter shows full capacity, the manage link shows "could not find that booking", and no confirmation email is sent because the client no longer has the token. My recommendation is to take the interim: two days of a degraded booking page against the contact details of every customer of fourteen studios.</p>
+<pre><code class="language-sql">drop policy &quot;bookings_public_all&quot; on public.bookings;
+create policy &quot;bookings_public_insert&quot; on public.bookings
+  for insert to anon, authenticated
+  with check (
+    status = 'pending'
+    and exists (
+      select 1 from public.sessions s
+      where s.id = session_id and s.published and s.studio_id = bookings.studio_id
+    )
+  );
+</code></pre>
+<p>What I looked for: a select policy narrower than <code>true</code> on <code>bookings</code> in either the migrations or the dump (none), a test exercising the anon role against <code>bookings</code> (none), and a database-side check that <code>studio_id</code> matches the session's studio (none; there is a foreign key to each table separately at <code>init.sql:41-42</code> but no compound constraint).</p>
+<h3>3.3 <code>lookup_customer</code> returns every customer to anyone</h3>
+<p><code>supabase/migrations/20250715163000_lookup_customer.sql:4-14</code>:</p>
+<pre><code class="language-sql">create or replace function public.lookup_customer(p_email text)
+returns setof public.customers
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select c.*
+  from public.customers c
+  where c.email ilike p_email;
+$$;
+</code></pre>
+<p><code>security definer</code> runs the query as the function's owner, so row-level security on <code>customers</code> does not apply. Postgres grants execute on new functions to <code>public</code> by default, so <code>anon</code> can call it through <code>POST /rest/v1/rpc/lookup_customer</code>. <code>ilike</code> was chosen for case-insensitivity, and it also treats <code>%</code> and <code>_</code> in the parameter as wildcards. <code>{"p_email": "%"}</code> returns the whole table: <code>id, studio_id, name, email, phone, marketing_opt_in</code> for every customer of every studio, in pages of 1,000 (Supabase's default <code>db-max-rows</code>). No filter on <code>studio_id</code> was ever intended, so even a fixed pattern returns one person's records across every studio they have ever booked with.</p>
+<p>The caller at <code>BookingForm.tsx:31</code> uses it to autofill name and phone when a returning customer types their email.</p>
+<p>Promotion (S): drop it, and stop the next one being public by default.</p>
+<pre><code class="language-sql">drop function public.lookup_customer(text);
+alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
+</code></pre>
+<p>The second statement applies to functions created from now on by the role that runs it (the <code>postgres</code> role, which is what the dashboard SQL editor and the CLI use), so a future <code>security definer</code> function has to be granted to <code>anon</code> on purpose. The autofill is a convenience worth two form fields; I would not rebuild it. If the founder wants it back, the safe shape is a function that takes the exact email and a <code>studio_id</code> and returns only <code>name, phone</code> for that one studio, which still lets anyone with a known email fetch that person's phone number, so I would still not build it.</p>
+<p>What I looked for: an <code>execute</code> revoke or grant anywhere in the migrations or the dump (none), a <code>studio_id</code> parameter (none), a test calling the RPC as <code>anon</code> (none).</p>
+<h3>3.4 Gift vouchers readable by the public</h3>
+<p>Production only, <code>schema-dump.sql:161</code>:</p>
+<pre><code class="language-sql">CREATE POLICY gift_vouchers_public_read ON public.gift_vouchers FOR SELECT TO anon, authenticated USING (true);
+</code></pre>
+<p>The table (<code>schema-dump.sql:77-87</code>) holds <code>code, initial_pence, balance_pence, purchaser_email, expires_at</code>. The booking form reads it at <code>BookingForm.tsx:41-46</code> by exact code to show the balance. <code>GET /rest/v1/gift_vouchers?select=code,balance_pence&amp;balance_pence=gt.0</code> lists every live voucher at every studio.</p>
+<p>What it costs: a voucher code is money. Every unredeemed balance can be spent by a stranger, at any studio (the client filters by code only, never by <code>studio_id</code>), and because of finding 10 it can be spent repeatedly. <code>purchaser_email</code> is personal data as well.</p>
+<p>Promotion (S):</p>
+<pre><code class="language-sql">drop policy &quot;gift_vouchers_public_read&quot; on public.gift_vouchers;
+
+create or replace function public.validate_voucher(p_code text, p_studio_id uuid)
+returns table (code text, balance_pence integer, expires_at date)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select v.code, v.balance_pence, v.expires_at
+  from public.gift_vouchers v
+  where v.code = upper(trim(p_code))
+    and v.studio_id = p_studio_id
+    and v.balance_pence &gt; 0
+    and (v.expires_at is null or v.expires_at &gt;= current_date);
+$$;
+revoke execute on function public.validate_voucher(text, uuid) from public;
+grant execute on function public.validate_voucher(text, uuid) to anon, authenticated;
+</code></pre>
+<p><code>BookingForm.tsx:41-46</code> becomes <code>supabase.rpc("validate_voucher", { p_code: code, p_studio_id: studio.id }).maybeSingle()</code>. One code per call, exact match, scoped to the studio. Codes should be at least 10 random characters; the sample has no generator, so the sprint adds one when it adds the owner's voucher page.</p>
+<p>What I looked for: any narrower policy on <code>gift_vouchers</code> (only <code>gift_vouchers_owner_all</code> at <code>schema-dump.sql:160</code>, which is correct, and the public read that undoes it), a <code>studio_id</code> filter at the call site (none).</p>
+<h3>3.5 Waitlist without row-level security</h3>
+<p><code>supabase/migrations/20250702141500_waitlist.sql</code> creates the table and an index and stops. There is no <code>alter table ... enable row level security</code>, and the production dump confirms it: <code>schema-dump.sql:146-151</code> enables RLS on six tables and <code>waitlist</code> is not among them. Supabase grants the <code>anon</code> and <code>authenticated</code> roles full privileges on new tables in <code>public</code>, so a table without RLS is fully open through the REST API.</p>
+<p><code>Book.tsx:115</code> inserts into it from the public page. Nothing in <code>src/</code> reads it: the migration comment says entries are "read by the studio owner on the sessions page", and <code>Sessions.tsx</code> has no such query. The waitlist is write-only today.</p>
+<p>What it costs: every name and email on every waitlist is readable, editable and deletable by anyone.</p>
+<p>Promotion (S), safe to run today:</p>
+<pre><code class="language-sql">alter table public.waitlist enable row level security;
+
+create policy &quot;waitlist_public_insert&quot; on public.waitlist
+  for insert to anon, authenticated
+  with check (exists (select 1 from public.sessions s where s.id = session_id and s.published));
+
+create policy &quot;waitlist_owner_all&quot; on public.waitlist
+  for all to authenticated
+  using (session_id in (
+    select s.id from public.sessions s
+    join public.studios st on st.id = s.studio_id
+    where st.owner_id = auth.uid()))
+  with check (session_id in (
+    select s.id from public.sessions s
+    join public.studios st on st.id = s.studio_id
+    where st.owner_id = auth.uid()));
+</code></pre>
+<p>The insert at <code>Book.tsx:115</code> has no <code>.select()</code>, so it keeps working with an insert-only policy.</p>
+<p>What I looked for: RLS enabled in a later migration (none of the five), in the dump (absent), any test (none).</p>
+<h3>3.6 Secrets committed, and still tracked</h3>
+<p><code>.env</code> was added in commit <code>f71d3ea</code> with six values: the project id and URL (public), the publishable key (<code>.env:3</code>, public by design), the service-role secret (<code>.env:4</code>), the OpenAI key (<code>.env:5</code>) and the Resend key (<code>.env:6</code>). Commit <code>ddb7519</code> added <code>.gitignore</code> with <code>.env</code> on line 22. Adding a path to <code>.gitignore</code> does not untrack a file that is already committed; <code>git ls-files</code> still lists <code>.env</code>, and it is in both commits' trees.</p>
+<p>What it costs: everyone who has ever cloned, forked or exported the repository has all four keys. Lovable's GitHub sync means the founder's GitHub account, and any collaborator's, holds them. Rotation is the only remedy; deleting the file from the tip changes nothing about the history.</p>
+<p>Promotion (S): rotate all three secrets (section 2 covers two; the Resend key is rotated at resend.com and set with <code>supabase secrets set RESEND_API_KEY=...</code>), then</p>
+<pre><code>git rm --cached .env
+git commit -m &quot;Stop tracking .env&quot;
+</code></pre>
+<p>and commit a <code>.env.example</code> with names only. Add a secret scan to CI, pinned by SHA:</p>
+<pre><code class="language-yaml">      - uses: gitleaks/gitleaks-action@&lt;full commit sha&gt;
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+</code></pre>
+<p>I would not rewrite history. Once the keys are dead the history is harmless, and rewriting a Lovable-synced repository breaks the sync.</p>
+<p>What I looked for: a pre-commit hook or CI step scanning for secrets (none), <code>.env.example</code> (none).</p>
+<h3>3.7 OpenAI key in the browser</h3>
+<p><code>src/lib/openai.ts:4</code> reads <code>import.meta.env.VITE_OPENAI_API_KEY</code>; line 11 calls <code>https://api.openai.com/v1/chat/completions</code> directly from the browser with the key in the <code>Authorization</code> header at line 15. <code>Sessions.tsx:154</code> calls it from the "Write it for me" button.</p>
+<p>What it costs: the key is in the bundle. Anyone can make requests against the founder's OpenAI account until the account's hard limit; if no hard limit is set, until the card declines.</p>
+<p>Promotion (S): a <code>describe-session</code> edge function with <code>verify_jwt = true</code> (the button is only on the logged-in owner page), <code>OPENAI_API_KEY</code> set with <code>supabase secrets set</code>, and <code>openai.ts</code> reduced to <code>supabase.functions.invoke("describe-session", { body })</code>. The CI grep from 3.1 pins the class of mistake.</p>
+<p>What I looked for: a proxy function in <code>supabase/functions/</code> (the three that exist are for email and cancellation), any allow-listed origin on the OpenAI side (OpenAI keys have none).</p>
+<h3>3.8 The booking total is computed in the browser</h3>
+<p><code>BookingForm.tsx:63-66</code>:</p>
+<pre><code class="language-ts">const gross = seats * (session.price_pence + session.materials_fee_pence);
+const discount = Math.min(voucher?.balance_pence ?? 0, gross);
+const total = gross - discount;
+const deposit = Math.round((total * studio.deposit_pct) / 100);
+</code></pre>
+<p>Lines 86 and 87 send <code>total</code> and <code>deposit</code> to the database as <code>total_pence</code> and <code>deposit_pence</code>. The only constraints on those columns are <code>&gt;= 0</code> (<code>20250611120000_init.sql:47-48</code>). The database has no idea what the total should be.</p>
+<p>What it costs: a request with <code>total_pence: 0, deposit_pence: 0</code> is a valid booking. The owner sees a pending booking with a £0 deposit and marks it paid or does not; either way the records are wrong. <code>Overview.tsx:29</code> sums <code>total_pence</code> for confirmed bookings as revenue, so the founder's own numbers are whatever clients chose to send.</p>
+<p>Promotion (L, one function for 8, 9 and 10): the client stops sending money at all.</p>
+<pre><code class="language-sql">create or replace function public.create_booking(
+  p_session_id uuid,
+  p_seats integer,
+  p_name text,
+  p_email text,
+  p_phone text,
+  p_notes text,
+  p_voucher_code text
+)
+returns table (booking_id uuid, total_pence integer, deposit_pence integer)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s          public.sessions%rowtype;
+  st         public.studios%rowtype;
+  v_taken    integer;
+  v_gross    integer;
+  v_balance  integer;
+  v_discount integer := 0;
+  v_total    integer;
+  v_deposit  integer;
+  v_id       uuid;
+begin
+  if p_seats is null or p_seats &lt; 1 then
+    raise exception 'seats must be at least 1';
+  end if;
+
+  -- Lock the class row: two bookings for the same class queue here.
+  select * into s from public.sessions
+   where id = p_session_id and published
+   for update;
+  if not found then
+    raise exception 'class not available';
+  end if;
+  select * into st from public.studios where id = s.studio_id;
+
+  select coalesce(sum(seats), 0) into v_taken
+    from public.bookings
+   where session_id = s.id and status &lt;&gt; 'cancelled';
+  if v_taken + p_seats &gt; s.capacity then
+    raise exception 'only % seat(s) left', s.capacity - v_taken;
+  end if;
+
+  v_gross := p_seats * (s.price_pence + s.materials_fee_pence);
+
+  if nullif(trim(p_voucher_code), '') is not null then
+    select balance_pence into v_balance
+      from public.gift_vouchers
+     where code = upper(trim(p_voucher_code))
+       and studio_id = s.studio_id
+       and (expires_at is null or expires_at &gt;= current_date)
+     for update;
+    if not found or v_balance &lt;= 0 then
+      raise exception 'voucher not recognised';
+    end if;
+    v_discount := least(v_balance, v_gross);
+    update public.gift_vouchers
+       set balance_pence = balance_pence - v_discount
+     where code = upper(trim(p_voucher_code));
+  end if;
+
+  v_total   := v_gross - v_discount;
+  v_deposit := round(v_total * st.deposit_pct / 100.0);
+
+  insert into public.bookings
+    (studio_id, session_id, customer_name, customer_email, customer_phone,
+     seats, total_pence, deposit_pence, notes, voucher_code)
+  values
+    (s.studio_id, s.id, p_name, lower(trim(p_email)), nullif(trim(p_phone), ''),
+     p_seats, v_total, v_deposit, nullif(trim(p_notes), ''), upper(trim(p_voucher_code)))
+  returning id into v_id;
+
+  return query select v_id, v_total, v_deposit;
+end;
+$$;
+
+revoke execute on function public.create_booking(uuid, integer, text, text, text, text, text) from public;
+grant execute on function public.create_booking(uuid, integer, text, text, text, text, text) to anon, authenticated;
+</code></pre>
+<p><code>BookingForm.tsx:77-92</code> becomes one <code>supabase.rpc("create_booking", {...})</code> call and shows the returned total and deposit. The function derives <code>studio_id</code> from the session, so the mismatch noted in 3.2 cannot happen either. It does not return <code>manage_token</code>; the confirmation email moves server-side (3.11).</p>
+<p>What I looked for: a trigger or check computing <code>total_pence</code> (none in the migrations or the dump; the only trigger is the customer upsert at <code>init.sql:106-108</code>), a test on the pricing arithmetic (none; <code>format.test.ts</code> tests display only).</p>
+<h3>3.9 Capacity is checked in the browser only</h3>
+<p><code>BookingForm.tsx:70-73</code> refuses the submit if <code>seats &gt; seatsLeft</code>, and line 115 sets <code>max={seatsLeft}</code> on the input. <code>seatsLeft</code> comes from <code>Book.tsx:44-56</code>, which sums <code>seats</code> over non-cancelled bookings fetched when the page loaded. The owner's page computes the same thing independently at <code>Sessions.tsx:51-53</code>.</p>
+<p>What it costs: two customers who load the page with one seat left both see one seat left and both book. Anyone who skips the form and posts to <code>/rest/v1/bookings</code> books as many seats as they like. The database constraint <code>capacity &gt; 0</code> at <code>init.sql:21</code> is about the class, not the bookings against it. Two copies of the seats-taken formula means they drift the first time one is edited.</p>
+<p>Promotion: <code>create_booking()</code> above takes <code>for update</code> on the session row, so concurrent bookings for the same class serialise, and it re-counts inside the lock. For display, one view replaces both copies of the formula:</p>
+<pre><code class="language-sql">create view public.session_availability as
+  select s.id as session_id,
+         s.capacity - coalesce(sum(b.seats) filter (where b.status &lt;&gt; 'cancelled'), 0)::integer as seats_left
+  from public.sessions s
+  left join public.bookings b on b.session_id = s.id
+  where s.published
+  group by s.id;
+grant select on public.session_availability to anon, authenticated;
+</code></pre>
+<p>The view runs with its owner's privileges (the Postgres default), which is deliberate here: it exposes two integers per published class and nothing else. Supabase's linter will flag it as a security-definer view; that is the one case where the flag is accepted, and the reason belongs in the migration as a comment.</p>
+<p>What I looked for: a trigger on <code>bookings</code> insert comparing against capacity (none), an exclusion or check constraint (none), a test (none).</p>
+<h3>3.10 Voucher balances never go down</h3>
+<p><code>BookingForm.tsx:64</code> applies <code>voucher.balance_pence</code> to the total and line 89 stores <code>voucher_code</code> on the booking. There is no write to <code>gift_vouchers.balance_pence</code> anywhere in <code>src/</code>, in the edge functions or in the database (no trigger references the table). The balance shown to the next customer who types the same code is unchanged.</p>
+<p>What it costs: a £50 voucher pays for a £50 class every week for ever. Because the client filters by <code>code</code> only (<code>BookingForm.tsx:41-46</code>), a voucher bought at one studio pays at any other. The studio's books show the discount as taken; the voucher's balance says it was not. Both are plausible; one is wrong.</p>
+<p>Promotion: the voucher block in <code>create_booking()</code> above locks the voucher row, checks studio and expiry, debits, and inserts the booking in the same transaction.</p>
+<p>What I looked for: an <code>update</code> on <code>gift_vouchers</code> in the client (none), a trigger (none), a test (none).</p>
+<h3>3.11 The confirmation function trusts its caller</h3>
+<p><code>supabase/functions/send-booking-confirmation/index.ts:19</code> destructures <code>booking_id, email, manage_token</code> from the request body. Line 53 sends to <code>email</code> from the body, not to the booking's stored address. Line 36 builds the manage link from the body's token. <code>supabase/config.toml:3-4</code> sets <code>verify_jwt = false</code>, which is necessary because the booking page has no user, and means anyone can call it.</p>
+<p>What it costs: a <code>POST</code> with any <code>booking_id</code> (readable in bulk while 3.2 stands), any recipient and any string as <code>manage_token</code> sends an email from <code>bookings@meadowlark.example</code> (line 52) with the studio's name, a real customer's name and class, and a link to <code>https://meadowlark.example/manage/&lt;attacker's string&gt;</code>. That is a phishing template on the studio's sender reputation.</p>
+<p>Promotion (M, with 3.12): stop the browser calling it. A Supabase database webhook on <code>insert</code> into <code>bookings</code> posts the new row to the function with a secret header; the function checks the header, reads <code>record.id</code>, loads the row and emails <code>booking.customer_email</code>. The client's <code>supabase.functions.invoke</code> at <code>BookingForm.tsx:100-102</code> is deleted. <code>verify_jwt</code> stays <code>false</code> because the caller is the database, and the secret header is the gate, as <code>session-reminders/index.ts:10</code> already does for cron.</p>
+<p>What I looked for: any comparison between the body's email and the row's (none), any token check (none), any rate limit (none).</p>
+<h3>3.12 Tokens and emails in the logs</h3>
+<p><code>send-booking-confirmation/index.ts:18</code>:</p>
+<pre><code class="language-ts">console.log(&quot;send-booking-confirmation payload&quot;, JSON.stringify(body));
+</code></pre>
+<p><code>body</code> contains <code>email</code> and <code>manage_token</code>. The sibling at <code>session-reminders/index.ts:37</code> logs <code>b.customer_email</code> and the whole booking row <code>b</code>, whose select at line 24 includes <code>manage_token</code>. <code>cancel-booking/index.ts:33</code> logs only <code>error.message</code>, so it is clean.</p>
+<p>What it costs: <code>manage_token</code> is the bearer credential for <code>cancel-booking</code> (<code>cancel-booking/index.ts:28</code>). Anyone who can read the Supabase function logs (every dashboard collaborator, any log drain) can cancel any booking with an upcoming reminder. Customer emails sit in the logs for the plan's retention period.</p>
+<p>Promotion (with 3.11): replace both lines with the id only.</p>
+<pre><code class="language-ts">console.log(&quot;send-booking-confirmation&quot;, { booking_id });
+console.log(&quot;reminding booking&quot;, b.id);
+</code></pre>
+<p>Pinning test: export the handler from each function (<code>Deno.serve(handler)</code> with <code>handler</code> exported), and a Deno test that stubs <code>fetch</code>, spies on <code>console.log</code>, calls the handler with a body containing <code>probe@example.com</code> and a token, and asserts neither string appears in any logged argument. This is the one Tier 3 item where a test is the right promotion, because the rule is "never" and there is no mechanism that can express it.</p>
+<p>What I looked for: a shared logging helper with redaction (none; there is no <code>_shared/</code> directory), any existing Deno test (none).</p>
+<h3>3.13 Migrations are not the schema</h3>
+<p>Comparing <code>supabase/migrations/</code> with <code>supabase/schema-dump.sql</code>:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Object</th>
+<th>In migrations</th>
+<th>In production</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gift_vouchers</code> table</td>
+<td>no</td>
+<td>yes</td>
+<td><code>schema-dump.sql:77-87</code></td>
+</tr>
+<tr>
+<td><code>customer_notes</code> table</td>
+<td>no</td>
+<td>yes</td>
+<td><code>schema-dump.sql:89-95</code></td>
+</tr>
+<tr>
+<td><code>bookings.voucher_code</code> column</td>
+<td>no</td>
+<td>yes</td>
+<td><code>schema-dump.sql:62</code></td>
+</tr>
+<tr>
+<td><code>gift_vouchers_owner_all</code> policy</td>
+<td>no</td>
+<td>yes</td>
+<td><code>schema-dump.sql:160</code></td>
+</tr>
+<tr>
+<td><code>gift_vouchers_public_read</code> policy</td>
+<td>no</td>
+<td>yes</td>
+<td><code>schema-dump.sql:161</code></td>
+</tr>
+<tr>
+<td><code>customer_notes_owner_all</code> policy</td>
+<td>no</td>
+<td>yes</td>
+<td><code>schema-dump.sql:162</code></td>
+</tr>
+<tr>
+<td>RLS enabled on those two tables</td>
+<td>no</td>
+<td>yes</td>
+<td><code>schema-dump.sql:150-151</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>All seven were created in the dashboard. The code already depends on them: <code>BookingForm.tsx:41-46,89</code>, <code>Customers.tsx:44,70</code>, and the generated types at <code>types.ts:28,66,120</code> were regenerated from production and know every one.</p>
+<p>What it costs: <code>supabase db reset</code>, a fresh branch database, or a second developer's local stack produces a database without vouchers, notes or <code>voucher_code</code>, and the app fails at the first voucher lookup. Any migration written against the repository and applied to production risks failing on an object the repository does not know about. The five migrations that do exist are correct; they are 7 objects short.</p>
+<p>Promotion (M): <code>supabase db diff --linked -f baseline_prod_only_objects</code> writes the seven objects as a migration (then hand-edit it to drop <code>gift_vouchers_public_read</code>, per 3.4). Then a CI job that proves migrations build the schema:</p>
+<pre><code class="language-yaml">  schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@&lt;sha&gt;
+      - uses: supabase/setup-cli@&lt;sha&gt;
+      - run: supabase db start
+      - run: supabase db reset            # every migration against an empty database
+      - run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+      - run: test -z &quot;$(supabase db diff --linked --schema public)&quot;
+</code></pre>
+<p>Once this is green, "production has something the repository does not" turns CI red on the next push. That is Tier 2 for the whole schema.</p>
+<p>What I looked for: a migration after 20250715 (none), any <code>db diff</code> or <code>db push</code> step in CI (none; <code>build.yml:17-18</code> is <code>npm ci</code> and <code>npm run build</code>).</p>
+<h3>3.14 Customer emails lower-cased at one site, not the other</h3>
+<p>The bookings trigger lower-cases the email before upserting into <code>customers</code> (<code>20250611120000_init.sql:98</code>) so that <code>on conflict (studio_id, email)</code> at line 99 finds the existing row. The owner's add-customer form at <code>src/pages/Customers.tsx:54-59</code> inserts <code>email</code> as typed. <code>unique (studio_id, email)</code> at <code>init.sql:36</code> is case-sensitive, so <code>Jo@Example.com</code> and <code>jo@example.com</code> are two customers, the trigger's upsert never matches the hand-entered row, and the studio ends up with two records per person.</p>
+<p>What it costs: duplicate customers and split booking history. Low blast radius, but it is silent, and it is the kind of thing a studio owner notices six months in.</p>
+<p>Promotion (S):</p>
+<pre><code class="language-sql">-- 1. Find case-only duplicates and merge them by hand (expect a handful):
+select studio_id, lower(email), count(*)
+from public.customers group by 1, 2 having count(*) &gt; 1;
+
+-- 2. Normalise, then make the rule a constraint:
+update public.customers set email = lower(email);
+alter table public.customers
+  add constraint customers_email_lowercase check (email = lower(email));
+</code></pre>
+<p><code>Customers.tsx:57</code> becomes <code>email: email.trim().toLowerCase()</code>. After the constraint, a mixed-case insert fails loudly instead of duplicating quietly.</p>
+<p>What I looked for: <code>lower(</code> or <code>citext</code> on <code>customers.email</code> (only inside the trigger), a check constraint (none).</p>
+<h3>3.15 One reminder per booking (leave as prose)</h3>
+<p><code>session-reminders/index.ts:24-26</code> selects due bookings, line 37 onwards sends, and line 49 marks <code>reminder_sent_at</code> after each success. Two overlapping runs would both select the same rows and both send.</p>
+<p>What it costs: a duplicate reminder email. The function runs once a day from cron behind a secret (<code>session-reminders/index.ts:7,10</code>), so the overlap requires the run to take more than a day or someone to trigger it by hand. I am leaving this as prose because the cost is one extra email and the probability is low; the one-line claim (<code>update ... set reminder_sent_at = now() where id = ... and reminder_sent_at is null returning id</code>, then send only if a row came back) is there if the schedule ever moves to minutes.</p>
+<h2>4. Tier 1 and Tier 2: what already holds</h2>
+<p>Verified by reading the mechanism or the test, not the comment next to it.</p>
+<p>Tier 1, enforced by a mechanism:</p>
+<ol>
+<li>A studio owner sees and edits only their own studio, classes, customers, notes and vouchers. <code>studios_owner_all</code> (<code>init.sql:60-63</code>), <code>sessions_owner_all</code> (<code>:70-73</code>), <code>customers_owner_all</code> (<code>:79-82</code>), <code>gift_vouchers_owner_all</code> and <code>customer_notes_owner_all</code> (<code>schema-dump.sql:160,162</code>). Each policy body restricts to <code>owner_id = auth.uid()</code> directly or through <code>studios</code>. Undone for <code>bookings</code> by 3.2, for <code>customers</code> by 3.3 and for <code>gift_vouchers</code> by 3.4; the owner-side half stands.</li>
+<li>Unpublished classes are invisible to the public. <code>sessions_public_read</code> at <code>init.sql:75-77</code> is <code>using (published = true)</code>, not <code>using (true)</code>.</li>
+<li>Every online booking creates or updates the studio's customer record. Trigger <code>trg_bookings_upsert_customer</code> at <code>init.sql:106-108</code>, function at <code>:90-104</code>.</li>
+<li>Manage tokens are unguessable and unique. Default <code>replace(gen_random_uuid()::text, '-', '')</code> (122 random bits) and a unique index, <code>20250618093000_manage_token.sql:4,7</code>.</li>
+<li>Vocabularies and ranges: <code>status</code> in three values, <code>level</code> in three, <code>seats &gt; 0</code>, <code>capacity &gt; 0</code>, prices <code>&gt;= 0</code>, <code>deposit_pct</code> 0 to 100. <code>init.sql:9,18,20-23,46-49</code>.</li>
+<li>Reminder runs need the cron secret. <code>session-reminders/index.ts:10</code> compares <code>x-cron-secret</code> with <code>!==</code>; if <code>CRON_SECRET</code> is unset the comparison is <code>null !== undefined</code> and every request is refused, so it fails closed.</li>
+<li><code>cancel-booking</code> cancels only the booking whose token was presented. <code>cancel-booking/index.ts:16</code> rejects tokens under 16 characters; <code>:28-29</code> updates <code>where manage_token = token and status &lt;&gt; 'cancelled'</code>. The function half is a mechanism. The database half is void while 3.2 lets anyone update <code>bookings</code> directly.</li>
+</ol>
+<p>Tier 2, pinned by a test:</p>
+<ol>
+<li>Money is stored in pence and displayed as pounds with two decimals. <code>src/lib/format.test.ts:5-8</code> asserts <code>formatPence(4500) === "£45.00"</code>, <code>805 → "£8.05"</code>, <code>0 → "£0.00"</code>. I checked the assertions would fail on the plausible mistakes (dividing by 1,000, dropping <code>toFixed</code>). It is the only test in the repository, and CI does not run it (<code>build.yml</code> has no <code>npm test</code>), so today it pins the rule on the developer's machine only. Adding <code>- run: npm test</code> to the workflow is a five-minute promotion.</li>
+</ol>
+<p>That is the whole inventory. Seven mechanisms and one test against fifteen prose rules is the ratio to fix.</p>
+<h2>5. Secrets, migrations, CI</h2>
+<h3>5.1 Secrets</h3>
+<p>Current tree:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Value</th>
+<th>Public by design?</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.env:1-2</code></td>
+<td>project id and URL</td>
+<td>yes</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>.env:3</code></td>
+<td><code>VITE_SUPABASE_PUBLISHABLE_KEY</code></td>
+<td>yes</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>.env:4</code></td>
+<td><code>VITE_SUPABASE_SERVICE_ROLE_KEY</code></td>
+<td>no, and compiled into the bundle via <code>admin.ts:8</code></td>
+<td>revoke today (section 2)</td>
+</tr>
+<tr>
+<td><code>.env:5</code></td>
+<td><code>VITE_OPENAI_API_KEY</code></td>
+<td>no, compiled into the bundle via <code>openai.ts:4</code></td>
+<td>rotate today</td>
+</tr>
+<tr>
+<td><code>.env:6</code></td>
+<td><code>RESEND_API_KEY</code></td>
+<td>no; not <code>VITE_</code>-prefixed so not in the bundle, but committed</td>
+<td>rotate in the sprint</td>
+</tr>
+<tr>
+<td><code>supabase/functions/*</code></td>
+<td><code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>RESEND_API_KEY</code>, <code>CRON_SECRET</code> from <code>Deno.env</code></td>
+<td>correct place</td>
+<td>none</td>
+</tr>
+</tbody>
+</table></div>
+<p>History: <code>.env</code> entered at <code>f71d3ea</code> and has been in every commit since. <code>.gitignore</code> arrived at <code>ddb7519</code> with <code>.env</code> on line 22; the file remained tracked. Two commits, one secret-bearing file, in every clone.</p>
+<h3>5.2 Migrations</h3>
+<p>Five migration files, dated 11 June to 15 July 2025, all applied in production (every object they create is in the dump). Seven objects in production that no migration creates (table in 3.13). Last migration 15 July; the dump is dated 19 September; the two production-only tables were created in that gap through the dashboard. The repository cannot rebuild production.</p>
+<h3>5.3 CI</h3>
+<p><code>.github/workflows/build.yml</code> runs <code>npm ci</code> and <code>npm run build</code> (lines 17-18) on push to <code>main</code> and on pull requests. It does not run <code>npm test</code> (defined at <code>package.json:12</code>), does not lint, does not touch the database, and pins its two actions by tag (<code>build.yml:12-13</code>), so a compromised <code>v4</code> tag would run in the founder's CI with the repository's token. Nothing in CI would go red if any finding in section 3 were reintroduced. After the sprint, five things will: the secret grep, gitleaks, <code>npm test</code>, the schema diff and the RLS suite.</p>
+<h2>6. Recommended hardening sprint</h2>
+<p>Fixed total, sequenced so each day leaves production better than the morning. Sizes: S half a day, M one day, L two days.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Day</th>
+<th>Item</th>
+<th>Size</th>
+<th>Closes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Revoke and rotate the three secrets; <code>git rm --cached .env</code>; <code>.env.example</code>; delete <code>admin.ts</code>; <code>describe-session</code> edge function; <code>admin-overview</code> edge function with <code>platform_admins</code>; secret grep and gitleaks in CI</td>
+<td>L</td>
+<td>3.1, 3.6, 3.7</td>
+</tr>
+<tr>
+<td>3</td>
+<td>RLS repair migration: drop <code>bookings_public_all</code>, waitlist RLS, drop <code>lookup_customer</code>, revoke default execute, <code>validate_voucher()</code>, <code>get_booking_by_token()</code></td>
+<td>M</td>
+<td>3.2, 3.3, 3.4, 3.5</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>create_booking()</code> and <code>session_availability</code>; booking form, seat counters and manage page rewired; <code>BookingForm.tsx</code> sends no money and no token</td>
+<td>L</td>
+<td>3.8, 3.9, 3.10 and the client half of 3.2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Confirmation email from a database webhook; recipients from the row; id-only logging in both functions; exported handlers with Deno tests and a console spy</td>
+<td>M</td>
+<td>3.11, 3.12</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Baseline migration for the seven production-only objects; CI job that resets from migrations and diffs against production; <code>npm test</code> in CI; actions pinned by SHA</td>
+<td>M</td>
+<td>3.13, Tier 2 promotion, 5.3</td>
+</tr>
+<tr>
+<td>8</td>
+<td>RLS test suite against a local Supabase: anon, a studio owner and a second owner against every policy touched above, 14 cases</td>
+<td>L</td>
+<td>Pins 3.2 to 3.5 and 3.8 to 3.10 at Tier 2</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Email lower-case constraint and clean-up; <code>.gitignore</code> and README corrected (<code>README.md:35-36</code> currently claims RLS on every important table)</td>
+<td>S</td>
+<td>3.14</td>
+</tr>
+</tbody>
+</table></div>
+<p>Nine and a half days. Fixed total £4,500 ($6,000), the sprint price for up to ten days, with the £550 audit fee credited: £3,950 payable. One line of justification: fifteen prose rules become seven mechanisms, one view, one RPC and fourteen tests, and the founder keeps building in Lovable throughout, because every change lands as a reviewed pull request and CI now refuses the mistakes that produced this list. If day 8 runs long, it is the test count that shrinks, not the mechanisms.</p>
+<h2>Appendix: the three tiers, for a non-technical reader</h2>
+<p>Every app has rules that matter: a customer sees only their own bookings, a price is worked out from the class, not typed in by the buyer, a secret key stays on the server. The question this report asks of each rule is not whether it is written down but what happens when someone breaks it.</p>
+<p>Tier 1 means the system itself enforces the rule. Break it and the database refuses, immediately.</p>
+<p>Tier 2 means a test exists that fails when the rule is broken. Someone finds out before the change ships, as long as the test runs.</p>
+<p>Tier 3 means the rule lives in a comment, a chat with an AI assistant, or someone's memory. Break it and nothing happens, until a customer notices, or an attacker does.</p>
+<p>Tier 3 is where the risk is. This report lists the cheapest way to move each such rule up a tier.</p>
+</main>
+<footer>Sample report on a synthetic codebase. Shored, shored.dev.</footer>
+</body>
+</html>

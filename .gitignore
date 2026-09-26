@@ -1,0 +1,3 @@
+# Root ignore for the sample repo
+# meadowlark/.env is tracked ON PURPOSE (EXAMPLE placeholders only): the committed-secrets finding depends on it.
+!meadowlark/.env
