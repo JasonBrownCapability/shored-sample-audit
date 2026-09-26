@@ -101,6 +101,26 @@ footer {
   color: var(--muted);
   font-size: 0.9rem;
 }
+/* Wide tables (five or more columns) leave the text column on a desktop and wrap their cells,
+   so the page never scrolls sideways; on a narrow screen each row becomes a stacked card. */
+.table-wrap.wide { width: min(100vw - 2rem, 78rem); margin-left: calc(50% - min(100vw - 2rem, 78rem) / 2); overflow: visible; }
+.table-wrap.wide table { table-layout: fixed; font-size: 0.82rem; line-height: 1.4; }
+.table-wrap.wide th { white-space: normal; vertical-align: bottom; }
+.table-wrap.wide td, .table-wrap.wide th { overflow-wrap: anywhere; vertical-align: top; }
+.table-wrap.wide.cols-6 th:nth-child(1) { width: 3.5%; }
+.table-wrap.wide.cols-6 th:nth-child(2) { width: 19%; }
+.table-wrap.wide.cols-6 th:nth-child(3) { width: 26%; }
+.table-wrap.wide.cols-6 th:nth-child(4) { width: 21%; }
+.table-wrap.wide.cols-6 th:nth-child(5) { width: 24%; }
+.table-wrap.wide.cols-6 th:nth-child(6) { width: 6.5%; }
+@media (max-width: 900px) {
+  .table-wrap.wide { width: auto; margin-left: 0; }
+  .table-wrap.wide table, .table-wrap.wide tbody, .table-wrap.wide tr, .table-wrap.wide td { display: block; width: 100%; }
+  .table-wrap.wide thead { display: none; }
+  .table-wrap.wide tr { border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0 0 0.8rem; background: none; }
+  .table-wrap.wide td { border: 0; padding: 0.3rem 0; }
+  .table-wrap.wide td::before { content: attr(data-label); display: block; font-weight: 600; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.1rem; }
+}
 @media (max-width: 600px) {
   body { font-size: 16px; }
   h1 { font-size: 1.6rem; }
@@ -136,8 +156,29 @@ def first_heading(md_text: str) -> str:
 
 
 def wrap_tables(rendered: str) -> str:
-    # Tables scroll sideways on a phone instead of breaking the page width.
-    return re.sub(r"<table>(.*?)</table>", r'<div class="table-wrap"><table>\1</table></div>', rendered, flags=re.S)
+    """Wrap every table. Narrow tables scroll sideways if they must. Wide tables (five or more
+    columns) get the .wide class, a .cols-N class for column widths, and a data-label on every
+    cell so the CSS can stack each row as a card on a narrow screen."""
+
+    def one(match: "re.Match[str]") -> str:
+        inner = match.group(1)
+        headers = [re.sub(r"<[^>]+>", "", h).strip() for h in re.findall(r"<th[^>]*>(.*?)</th>", inner, flags=re.S)]
+        if len(headers) < 5:
+            return f'<div class="table-wrap"><table>{inner}</table></div>'
+
+        def label_row(row_match: "re.Match[str]") -> str:
+            cells = re.findall(r"<td([^>]*)>(.*?)</td>", row_match.group(1), flags=re.S)
+            out = []
+            for i, (attrs, body) in enumerate(cells):
+                label = html.escape(headers[i] if i < len(headers) else "")
+                out.append(f'<td{attrs} data-label="{label}">{body}</td>')
+            return "<tr>" + "".join(out) + "</tr>"
+
+        head, sep, body_html = inner.partition("<tbody>")
+        body_html = re.sub(r"<tr>(.*?)</tr>", label_row, body_html, flags=re.S)
+        return f'<div class="table-wrap wide cols-{len(headers)}"><table>{head}{sep}{body_html}</table></div>'
+
+    return re.sub(r"<table>(.*?)</table>", one, rendered, flags=re.S)
 
 
 def render(md_path: Path, out_path: Path | None = None) -> Path:

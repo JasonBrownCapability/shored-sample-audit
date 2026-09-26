@@ -82,6 +82,26 @@ footer {
   color: var(--muted);
   font-size: 0.9rem;
 }
+/* Wide tables (five or more columns) leave the text column on a desktop and wrap their cells,
+   so the page never scrolls sideways; on a narrow screen each row becomes a stacked card. */
+.table-wrap.wide { width: min(100vw - 2rem, 78rem); margin-left: calc(50% - min(100vw - 2rem, 78rem) / 2); overflow: visible; }
+.table-wrap.wide table { table-layout: fixed; font-size: 0.82rem; line-height: 1.4; }
+.table-wrap.wide th { white-space: normal; vertical-align: bottom; }
+.table-wrap.wide td, .table-wrap.wide th { overflow-wrap: anywhere; vertical-align: top; }
+.table-wrap.wide.cols-6 th:nth-child(1) { width: 3.5%; }
+.table-wrap.wide.cols-6 th:nth-child(2) { width: 19%; }
+.table-wrap.wide.cols-6 th:nth-child(3) { width: 26%; }
+.table-wrap.wide.cols-6 th:nth-child(4) { width: 21%; }
+.table-wrap.wide.cols-6 th:nth-child(5) { width: 24%; }
+.table-wrap.wide.cols-6 th:nth-child(6) { width: 6.5%; }
+@media (max-width: 900px) {
+  .table-wrap.wide { width: auto; margin-left: 0; }
+  .table-wrap.wide table, .table-wrap.wide tbody, .table-wrap.wide tr, .table-wrap.wide td { display: block; width: 100%; }
+  .table-wrap.wide thead { display: none; }
+  .table-wrap.wide tr { border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0 0 0.8rem; background: none; }
+  .table-wrap.wide td { border: 0; padding: 0.3rem 0; }
+  .table-wrap.wide td::before { content: attr(data-label); display: block; font-weight: 600; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.1rem; }
+}
 @media (max-width: 600px) {
   body { font-size: 16px; }
   h1 { font-size: 1.6rem; }
@@ -168,7 +188,7 @@ footer {
 <p>The bookings policy (finding 2) is the one live exposure that cannot be closed in ten minutes without breaking the booking page, because three client call sites depend on it. Section 3 gives the interim option and what it costs.</p>
 <h2>3. Tier 3: protected by prose alone</h2>
 <p>Sorted by blast radius. "Live" means the violation has already happened and is exploitable today. Sizes are for the promotion: S is half a day, M one day, L two days.</p>
-<div class="table-wrap"><table>
+<div class="table-wrap wide cols-6"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -180,126 +200,21 @@ footer {
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>1</td>
-<td>The service-role key never reaches the browser</td>
-<td><code>.env:4</code>, <code>src/integrations/supabase/admin.ts:8-10</code>, <code>src/pages/admin/Overview.tsx:2,12,20</code></td>
-<td>Live. Every row of every table readable and writable; Auth admin API open</td>
-<td>Revoke, delete the admin client, rebuild <code>/admin</code> as an edge function behind a <code>platform_admins</code> table; CI grep that fails on <code>VITE_*SECRET|SERVICE_ROLE|API_KEY</code></td>
-<td>M</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Bookings are visible only to the studio that owns them</td>
-<td><code>supabase/migrations/20250709101200_fix_booking_insert.sql:2-5</code>; dependents <code>BookingForm.tsx:77-92</code>, <code>src/pages/Book.tsx:44-56</code>, <code>src/pages/Manage.tsx:18-22</code></td>
-<td>Live. Name, email, phone and notes of every booking at every studio readable; any booking can be confirmed, cancelled or deleted by anyone</td>
-<td>Drop the policy; move the write into <code>create_booking()</code>, the seat count into a view, the manage page into <code>get_booking_by_token()</code></td>
-<td>L</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Customers are visible only to their own studio</td>
-<td><code>supabase/migrations/20250715163000_lookup_customer.sql:4-14</code> (<code>ilike</code> at 13); called at <code>BookingForm.tsx:31</code></td>
-<td>Live. <code>rpc/lookup_customer</code> with <code>p_email = '%'</code> returns every customer row in the database, 1,000 per page</td>
-<td>Drop the function; revoke default execute on new functions</td>
-<td>S</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Gift-voucher codes and balances are visible only to their studio</td>
-<td><code>supabase/schema-dump.sql:161</code> (production only); read at <code>BookingForm.tsx:41-46</code></td>
-<td>Live. Every unredeemed code, balance and purchaser email readable; free classes at any studio</td>
-<td>Drop the read policy; replace with <code>validate_voucher(code, studio_id)</code> exact-match function</td>
-<td>S</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Waitlist entries are visible only to the studio</td>
-<td><code>supabase/migrations/20250702141500_waitlist.sql:3-11</code> (no RLS); <code>Book.tsx:115</code></td>
-<td>Live. Every waitlist name and email readable and deletable</td>
-<td>Enable RLS; insert-only policy for the public, owner policy for reads</td>
-<td>S</td>
-</tr>
-<tr>
-<td>6</td>
-<td>Secrets are never committed</td>
-<td><code>.env:1-6</code> tracked since commit <code>e48ceb9</code>; <code>.gitignore:22</code> added in <code>e841fee</code></td>
-<td>Live. Four credentials in every clone, fork and Lovable export of the repository, for ever</td>
-<td><code>git rm --cached .env</code>, rotate, <code>.env.example</code>, gitleaks in CI</td>
-<td>S</td>
-</tr>
-<tr>
-<td>7</td>
-<td>The OpenAI key never reaches the browser</td>
-<td><code>src/lib/openai.ts:4,11,15</code>; <code>.env:5</code>; called from <code>src/pages/Sessions.tsx:154</code></td>
-<td>Live. Anyone can spend against the founder's OpenAI account up to its hard limit</td>
-<td>Move the call into a <code>describe-session</code> edge function with JWT verification</td>
-<td>S</td>
-</tr>
-<tr>
-<td>8</td>
-<td>A booking's total equals seats × (price + materials) − voucher</td>
-<td><code>BookingForm.tsx:63-66,86-87</code>; only guard is <code>total_pence &gt;= 0</code> at <code>20250611120000_init.sql:47</code></td>
-<td>Any caller can book at £0; the admin revenue figure (<code>Overview.tsx:29</code>) sums client-supplied numbers</td>
-<td>Compute the total inside <code>create_booking()</code>; the client's number is never stored</td>
-<td>L (shared with 9, 10)</td>
-</tr>
-<tr>
-<td>9</td>
-<td>Seats booked never exceed the class capacity</td>
-<td><code>BookingForm.tsx:70-73,115</code>; count at <code>Book.tsx:44-56</code>; same formula copied at <code>Sessions.tsx:51-53</code></td>
-<td>Two customers booking the last seat at the same time both succeed; a caller can skip the check entirely</td>
-<td><code>create_booking()</code> locks the session row and re-counts; <code>session_availability</code> view replaces both copies of the formula</td>
-<td>shared</td>
-</tr>
-<tr>
-<td>10</td>
-<td>A voucher's balance goes down when it is used</td>
-<td>Read at <code>BookingForm.tsx:41-46,64</code>; <code>voucher_code</code> stored at <code>:89</code>; no write to <code>balance_pence</code> anywhere in <code>src/</code></td>
-<td>One voucher pays for unlimited classes; the client also never checks the voucher belongs to the studio being booked</td>
-<td><code>create_booking()</code> debits the voucher in the same transaction, scoped to the studio</td>
-<td>shared</td>
-</tr>
-<tr>
-<td>11</td>
-<td>A confirmation email goes only to the person who made the booking</td>
-<td><code>supabase/functions/send-booking-confirmation/index.ts:19,36,53</code>; <code>supabase/config.toml:3-4</code></td>
-<td>Anyone can send templated emails from the studio's sending address to any recipient, with a link path of their choosing</td>
-<td>Trigger the function from a database webhook; take the recipient from the booking row</td>
-<td>M (shared with 12)</td>
-</tr>
-<tr>
-<td>12</td>
-<td>Manage tokens and customer emails never reach the logs</td>
-<td><code>send-booking-confirmation/index.ts:18</code>; sibling <code>session-reminders/index.ts:37</code> logs the whole row including <code>manage_token</code> (selected at <code>:24</code>)</td>
-<td>Anyone with log access can cancel any upcoming booking; personal data sits in logs for the retention period</td>
-<td>Log ids only; a Deno test with a console spy pins it</td>
-<td>shared</td>
-</tr>
-<tr>
-<td>13</td>
-<td>The schema in <code>supabase/migrations/</code> is the schema in production</td>
-<td>Two tables, one column and three policies exist only in <code>schema-dump.sql:62,77-95,160-162</code>; the generated types already know them (<code>types.ts:28,66,120</code>)</td>
-<td><code>supabase db reset</code> yields a database the app cannot run against; any hardening migration written from the repo fails on production</td>
-<td>Baseline migration from the dump; CI job that applies migrations to an empty database and diffs against production</td>
-<td>M</td>
-</tr>
-<tr>
-<td>14</td>
-<td>Customer emails are stored lower-case</td>
-<td>Trigger lowercases at <code>20250611120000_init.sql:98</code>; owner's form does not at <code>src/pages/Customers.tsx:54-59</code></td>
-<td>Duplicate customer records; <code>unique (studio_id, email)</code> at <code>init.sql:36</code> cannot catch case variants</td>
-<td><code>check (email = lower(email))</code> after a one-off clean-up</td>
-<td>S</td>
-</tr>
-<tr>
-<td>15</td>
-<td>A reminder is sent once per booking</td>
-<td><code>session-reminders/index.ts:24-50</code> selects, sends, then marks</td>
-<td>A duplicate reminder email if two runs overlap</td>
-<td>Leave as prose: one daily run, one duplicate email at worst. The claim-update is one line if the schedule ever tightens</td>
-<td>none</td>
-</tr>
+<tr><td data-label="#">1</td><td data-label="Quirk (the rule that should hold)">The service-role key never reaches the browser</td><td data-label="Where it lives"><code>.env:4</code>, <code>src/integrations/supabase/admin.ts:8-10</code>, <code>src/pages/admin/Overview.tsx:2,12,20</code></td><td data-label="What it costs if violated">Live. Every row of every table readable and writable; Auth admin API open</td><td data-label="Cheapest adequate promotion">Revoke, delete the admin client, rebuild <code>/admin</code> as an edge function behind a <code>platform_admins</code> table; CI grep that fails on <code>VITE_*SECRET|SERVICE_ROLE|API_KEY</code></td><td data-label="Size">M</td></tr>
+<tr><td data-label="#">2</td><td data-label="Quirk (the rule that should hold)">Bookings are visible only to the studio that owns them</td><td data-label="Where it lives"><code>supabase/migrations/20250709101200_fix_booking_insert.sql:2-5</code>; dependents <code>BookingForm.tsx:77-92</code>, <code>src/pages/Book.tsx:44-56</code>, <code>src/pages/Manage.tsx:18-22</code></td><td data-label="What it costs if violated">Live. Name, email, phone and notes of every booking at every studio readable; any booking can be confirmed, cancelled or deleted by anyone</td><td data-label="Cheapest adequate promotion">Drop the policy; move the write into <code>create_booking()</code>, the seat count into a view, the manage page into <code>get_booking_by_token()</code></td><td data-label="Size">L</td></tr>
+<tr><td data-label="#">3</td><td data-label="Quirk (the rule that should hold)">Customers are visible only to their own studio</td><td data-label="Where it lives"><code>supabase/migrations/20250715163000_lookup_customer.sql:4-14</code> (<code>ilike</code> at 13); called at <code>BookingForm.tsx:31</code></td><td data-label="What it costs if violated">Live. <code>rpc/lookup_customer</code> with <code>p_email = '%'</code> returns every customer row in the database, 1,000 per page</td><td data-label="Cheapest adequate promotion">Drop the function; revoke default execute on new functions</td><td data-label="Size">S</td></tr>
+<tr><td data-label="#">4</td><td data-label="Quirk (the rule that should hold)">Gift-voucher codes and balances are visible only to their studio</td><td data-label="Where it lives"><code>supabase/schema-dump.sql:161</code> (production only); read at <code>BookingForm.tsx:41-46</code></td><td data-label="What it costs if violated">Live. Every unredeemed code, balance and purchaser email readable; free classes at any studio</td><td data-label="Cheapest adequate promotion">Drop the read policy; replace with <code>validate_voucher(code, studio_id)</code> exact-match function</td><td data-label="Size">S</td></tr>
+<tr><td data-label="#">5</td><td data-label="Quirk (the rule that should hold)">Waitlist entries are visible only to the studio</td><td data-label="Where it lives"><code>supabase/migrations/20250702141500_waitlist.sql:3-11</code> (no RLS); <code>Book.tsx:115</code></td><td data-label="What it costs if violated">Live. Every waitlist name and email readable and deletable</td><td data-label="Cheapest adequate promotion">Enable RLS; insert-only policy for the public, owner policy for reads</td><td data-label="Size">S</td></tr>
+<tr><td data-label="#">6</td><td data-label="Quirk (the rule that should hold)">Secrets are never committed</td><td data-label="Where it lives"><code>.env:1-6</code> tracked since commit <code>e48ceb9</code>; <code>.gitignore:22</code> added in <code>e841fee</code></td><td data-label="What it costs if violated">Live. Four credentials in every clone, fork and Lovable export of the repository, for ever</td><td data-label="Cheapest adequate promotion"><code>git rm --cached .env</code>, rotate, <code>.env.example</code>, gitleaks in CI</td><td data-label="Size">S</td></tr>
+<tr><td data-label="#">7</td><td data-label="Quirk (the rule that should hold)">The OpenAI key never reaches the browser</td><td data-label="Where it lives"><code>src/lib/openai.ts:4,11,15</code>; <code>.env:5</code>; called from <code>src/pages/Sessions.tsx:154</code></td><td data-label="What it costs if violated">Live. Anyone can spend against the founder's OpenAI account up to its hard limit</td><td data-label="Cheapest adequate promotion">Move the call into a <code>describe-session</code> edge function with JWT verification</td><td data-label="Size">S</td></tr>
+<tr><td data-label="#">8</td><td data-label="Quirk (the rule that should hold)">A booking's total equals seats × (price + materials) − voucher</td><td data-label="Where it lives"><code>BookingForm.tsx:63-66,86-87</code>; only guard is <code>total_pence &gt;= 0</code> at <code>20250611120000_init.sql:47</code></td><td data-label="What it costs if violated">Any caller can book at £0; the admin revenue figure (<code>Overview.tsx:29</code>) sums client-supplied numbers</td><td data-label="Cheapest adequate promotion">Compute the total inside <code>create_booking()</code>; the client's number is never stored</td><td data-label="Size">L (shared with 9, 10)</td></tr>
+<tr><td data-label="#">9</td><td data-label="Quirk (the rule that should hold)">Seats booked never exceed the class capacity</td><td data-label="Where it lives"><code>BookingForm.tsx:70-73,115</code>; count at <code>Book.tsx:44-56</code>; same formula copied at <code>Sessions.tsx:51-53</code></td><td data-label="What it costs if violated">Two customers booking the last seat at the same time both succeed; a caller can skip the check entirely</td><td data-label="Cheapest adequate promotion"><code>create_booking()</code> locks the session row and re-counts; <code>session_availability</code> view replaces both copies of the formula</td><td data-label="Size">shared</td></tr>
+<tr><td data-label="#">10</td><td data-label="Quirk (the rule that should hold)">A voucher's balance goes down when it is used</td><td data-label="Where it lives">Read at <code>BookingForm.tsx:41-46,64</code>; <code>voucher_code</code> stored at <code>:89</code>; no write to <code>balance_pence</code> anywhere in <code>src/</code></td><td data-label="What it costs if violated">One voucher pays for unlimited classes; the client also never checks the voucher belongs to the studio being booked</td><td data-label="Cheapest adequate promotion"><code>create_booking()</code> debits the voucher in the same transaction, scoped to the studio</td><td data-label="Size">shared</td></tr>
+<tr><td data-label="#">11</td><td data-label="Quirk (the rule that should hold)">A confirmation email goes only to the person who made the booking</td><td data-label="Where it lives"><code>supabase/functions/send-booking-confirmation/index.ts:19,36,53</code>; <code>supabase/config.toml:3-4</code></td><td data-label="What it costs if violated">Anyone can send templated emails from the studio's sending address to any recipient, with a link path of their choosing</td><td data-label="Cheapest adequate promotion">Trigger the function from a database webhook; take the recipient from the booking row</td><td data-label="Size">M (shared with 12)</td></tr>
+<tr><td data-label="#">12</td><td data-label="Quirk (the rule that should hold)">Manage tokens and customer emails never reach the logs</td><td data-label="Where it lives"><code>send-booking-confirmation/index.ts:18</code>; sibling <code>session-reminders/index.ts:37</code> logs the whole row including <code>manage_token</code> (selected at <code>:24</code>)</td><td data-label="What it costs if violated">Anyone with log access can cancel any upcoming booking; personal data sits in logs for the retention period</td><td data-label="Cheapest adequate promotion">Log ids only; a Deno test with a console spy pins it</td><td data-label="Size">shared</td></tr>
+<tr><td data-label="#">13</td><td data-label="Quirk (the rule that should hold)">The schema in <code>supabase/migrations/</code> is the schema in production</td><td data-label="Where it lives">Two tables, one column and three policies exist only in <code>schema-dump.sql:62,77-95,160-162</code>; the generated types already know them (<code>types.ts:28,66,120</code>)</td><td data-label="What it costs if violated"><code>supabase db reset</code> yields a database the app cannot run against; any hardening migration written from the repo fails on production</td><td data-label="Cheapest adequate promotion">Baseline migration from the dump; CI job that applies migrations to an empty database and diffs against production</td><td data-label="Size">M</td></tr>
+<tr><td data-label="#">14</td><td data-label="Quirk (the rule that should hold)">Customer emails are stored lower-case</td><td data-label="Where it lives">Trigger lowercases at <code>20250611120000_init.sql:98</code>; owner's form does not at <code>src/pages/Customers.tsx:54-59</code></td><td data-label="What it costs if violated">Duplicate customer records; <code>unique (studio_id, email)</code> at <code>init.sql:36</code> cannot catch case variants</td><td data-label="Cheapest adequate promotion"><code>check (email = lower(email))</code> after a one-off clean-up</td><td data-label="Size">S</td></tr>
+<tr><td data-label="#">15</td><td data-label="Quirk (the rule that should hold)">A reminder is sent once per booking</td><td data-label="Where it lives"><code>session-reminders/index.ts:24-50</code> selects, sends, then marks</td><td data-label="What it costs if violated">A duplicate reminder email if two runs overlap</td><td data-label="Cheapest adequate promotion">Leave as prose: one daily run, one duplicate email at worst. The claim-update is one line if the schedule ever tightens</td><td data-label="Size">none</td></tr>
 </tbody>
 </table></div>
 <h3>3.1 The service-role key in the browser bundle</h3>
