@@ -7,6 +7,13 @@ This is the sample enforcement-tier audit that [Shored](https://shored.dev) publ
 
 Every finding in the report cites a file and line in `meadowlark/`. If you find one that does not hold, open an issue.
 
+This repository is the single source of the sample. `report.md` is the text; `index.html` is generated from it. To change the report, edit the Markdown and run, from the repository root (needs [uv](https://docs.astral.sh/uv/)):
+
+    uv run tools/render-report.py report.md -o index.html
+    uv run tools/check-citations.py
+
+The second command fails if any `file:line` in the report no longer points at the line it describes, which is what happens when `meadowlark/` is edited. Fix the citation or the code, not the checker.
+
 The method: every load-bearing rule in an app is classified as Tier 1 (enforced by a mechanism), Tier 2 (pinned by a test that would actually fail) or Tier 3 (prose only), sorted by blast radius, each with the cheapest adequate promotion, and a fixed-total sprint at the end.
 
 © 2026 Jason Brown. Report text: CC BY-NC-ND 4.0. Sample code: MIT.
