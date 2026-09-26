@@ -7,7 +7,7 @@ Sample report on a synthetic codebase. Meadowlark, its founder, its studios and 
 | Prepared for | The founder of Meadowlark (class bookings and deposits for small pottery studios) |
 | Prepared by | Jason Brown, Shored |
 | Date | 26 September 2026 |
-| Inputs | Repository at commit `ddb7519` (42 files, 33 of them source), read-only. `supabase/schema-dump.sql`, a dump of the production schema the founder pulled on 19 September 2026. No production data was read. |
+| Inputs | Repository at commit `e841fee` (42 files, 33 of them source), read-only. `supabase/schema-dump.sql`, a dump of the production schema the founder pulled on 19 September 2026. No production data was read. |
 | Stack | React 18, Vite, TypeScript, Tailwind, Supabase (Postgres, Auth, three Deno edge functions), Resend, OpenAI. Built with Lovable. |
 | Paths | Relative to the Meadowlark repository root. `file:12-15` means lines 12 to 15. |
 
@@ -56,7 +56,7 @@ Sorted by blast radius. "Live" means the violation has already happened and is e
 | 3 | Customers are visible only to their own studio | `supabase/migrations/20250715163000_lookup_customer.sql:4-14` (`ilike` at 13); called at `BookingForm.tsx:31` | Live. `rpc/lookup_customer` with `p_email = '%'` returns every customer row in the database, 1,000 per page | Drop the function; revoke default execute on new functions | S |
 | 4 | Gift-voucher codes and balances are visible only to their studio | `supabase/schema-dump.sql:161` (production only); read at `BookingForm.tsx:41-46` | Live. Every unredeemed code, balance and purchaser email readable; free classes at any studio | Drop the read policy; replace with `validate_voucher(code, studio_id)` exact-match function | S |
 | 5 | Waitlist entries are visible only to the studio | `supabase/migrations/20250702141500_waitlist.sql:3-11` (no RLS); `Book.tsx:115` | Live. Every waitlist name and email readable and deletable | Enable RLS; insert-only policy for the public, owner policy for reads | S |
-| 6 | Secrets are never committed | `.env:1-6` tracked since commit `f71d3ea`; `.gitignore:22` added in `ddb7519` | Live. Four credentials in every clone, fork and Lovable export of the repository, for ever | `git rm --cached .env`, rotate, `.env.example`, gitleaks in CI | S |
+| 6 | Secrets are never committed | `.env:1-6` tracked since commit `e48ceb9`; `.gitignore:22` added in `e841fee` | Live. Four credentials in every clone, fork and Lovable export of the repository, for ever | `git rm --cached .env`, rotate, `.env.example`, gitleaks in CI | S |
 | 7 | The OpenAI key never reaches the browser | `src/lib/openai.ts:4,11,15`; `.env:5`; called from `src/pages/Sessions.tsx:154` | Live. Anyone can spend against the founder's OpenAI account up to its hard limit | Move the call into a `describe-session` edge function with JWT verification | S |
 | 8 | A booking's total equals seats × (price + materials) − voucher | `BookingForm.tsx:63-66,86-87`; only guard is `total_pence >= 0` at `20250611120000_init.sql:47` | Any caller can book at £0; the admin revenue figure (`Overview.tsx:29`) sums client-supplied numbers | Compute the total inside `create_booking()`; the client's number is never stored | L (shared with 9, 10) |
 | 9 | Seats booked never exceed the class capacity | `BookingForm.tsx:70-73,115`; count at `Book.tsx:44-56`; same formula copied at `Sessions.tsx:51-53` | Two customers booking the last seat at the same time both succeed; a caller can skip the check entirely | `create_booking()` locks the session row and re-counts; `session_availability` view replaces both copies of the formula | shared |
@@ -269,7 +269,7 @@ What I looked for: RLS enabled in a later migration (none of the five), in the d
 
 ### 3.6 Secrets committed, and still tracked
 
-`.env` was added in commit `f71d3ea` with six values: the project id and URL (public), the publishable key (`.env:3`, public by design), the service-role secret (`.env:4`), the OpenAI key (`.env:5`) and the Resend key (`.env:6`). Commit `ddb7519` added `.gitignore` with `.env` on line 22. Adding a path to `.gitignore` does not untrack a file that is already committed; `git ls-files` still lists `.env`, and it is in both commits' trees.
+`.env` was added in commit `e48ceb9` with six values: the project id and URL (public), the publishable key (`.env:3`, public by design), the service-role secret (`.env:4`), the OpenAI key (`.env:5`) and the Resend key (`.env:6`). Commit `e841fee` added `.gitignore` with `.env` on line 22. Adding a path to `.gitignore` does not untrack a file that is already committed; `git ls-files` still lists `.env`, and it is in both commits' trees.
 
 What it costs: everyone who has ever cloned, forked or exported the repository has all four keys. Lovable's GitHub sync means the founder's GitHub account, and any collaborator's, holds them. Rotation is the only remedy; deleting the file from the tip changes nothing about the history.
 
@@ -572,7 +572,7 @@ Current tree:
 | `.env:6` | `RESEND_API_KEY` | no; not `VITE_`-prefixed so not in the bundle, but committed | rotate in the sprint |
 | `supabase/functions/*` | `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CRON_SECRET` from `Deno.env` | correct place | none |
 
-History: `.env` entered at `f71d3ea` and has been in every commit since. `.gitignore` arrived at `ddb7519` with `.env` on line 22; the file remained tracked. Two commits, one secret-bearing file, in every clone.
+History: `.env` entered at `e48ceb9` and has been in every commit since. `.gitignore` arrived at `e841fee` with `.env` on line 22; the file remained tracked. Two commits, one secret-bearing file, in every clone.
 
 ### 5.2 Migrations
 

@@ -115,7 +115,7 @@ footer {
 </tr>
 <tr>
 <td>Inputs</td>
-<td>Repository at commit <code>ddb7519</code> (42 files, 33 of them source), read-only. <code>supabase/schema-dump.sql</code>, a dump of the production schema the founder pulled on 19 September 2026. No production data was read.</td>
+<td>Repository at commit <code>e841fee</code> (42 files, 33 of them source), read-only. <code>supabase/schema-dump.sql</code>, a dump of the production schema the founder pulled on 19 September 2026. No production data was read.</td>
 </tr>
 <tr>
 <td>Stack</td>
@@ -223,7 +223,7 @@ footer {
 <tr>
 <td>6</td>
 <td>Secrets are never committed</td>
-<td><code>.env:1-6</code> tracked since commit <code>f71d3ea</code>; <code>.gitignore:22</code> added in <code>ddb7519</code></td>
+<td><code>.env:1-6</code> tracked since commit <code>e48ceb9</code>; <code>.gitignore:22</code> added in <code>e841fee</code></td>
 <td>Live. Four credentials in every clone, fork and Lovable export of the repository, for ever</td>
 <td><code>git rm --cached .env</code>, rotate, <code>.env.example</code>, gitleaks in CI</td>
 <td>S</td>
@@ -446,7 +446,7 @@ create policy &quot;waitlist_owner_all&quot; on public.waitlist
 <p>The insert at <code>Book.tsx:115</code> has no <code>.select()</code>, so it keeps working with an insert-only policy.</p>
 <p>What I looked for: RLS enabled in a later migration (none of the five), in the dump (absent), any test (none).</p>
 <h3>3.6 Secrets committed, and still tracked</h3>
-<p><code>.env</code> was added in commit <code>f71d3ea</code> with six values: the project id and URL (public), the publishable key (<code>.env:3</code>, public by design), the service-role secret (<code>.env:4</code>), the OpenAI key (<code>.env:5</code>) and the Resend key (<code>.env:6</code>). Commit <code>ddb7519</code> added <code>.gitignore</code> with <code>.env</code> on line 22. Adding a path to <code>.gitignore</code> does not untrack a file that is already committed; <code>git ls-files</code> still lists <code>.env</code>, and it is in both commits' trees.</p>
+<p><code>.env</code> was added in commit <code>e48ceb9</code> with six values: the project id and URL (public), the publishable key (<code>.env:3</code>, public by design), the service-role secret (<code>.env:4</code>), the OpenAI key (<code>.env:5</code>) and the Resend key (<code>.env:6</code>). Commit <code>e841fee</code> added <code>.gitignore</code> with <code>.env</code> on line 22. Adding a path to <code>.gitignore</code> does not untrack a file that is already committed; <code>git ls-files</code> still lists <code>.env</code>, and it is in both commits' trees.</p>
 <p>What it costs: everyone who has ever cloned, forked or exported the repository has all four keys. Lovable's GitHub sync means the founder's GitHub account, and any collaborator's, holds them. Rotation is the only remedy; deleting the file from the tip changes nothing about the history.</p>
 <p>Promotion (S): rotate all three secrets (section 2 covers two; the Resend key is rotated at resend.com and set with <code>supabase secrets set RESEND_API_KEY=...</code>), then</p>
 <pre><code>git rm --cached .env
@@ -751,7 +751,7 @@ alter table public.customers
 </tr>
 </tbody>
 </table></div>
-<p>History: <code>.env</code> entered at <code>f71d3ea</code> and has been in every commit since. <code>.gitignore</code> arrived at <code>ddb7519</code> with <code>.env</code> on line 22; the file remained tracked. Two commits, one secret-bearing file, in every clone.</p>
+<p>History: <code>.env</code> entered at <code>e48ceb9</code> and has been in every commit since. <code>.gitignore</code> arrived at <code>e841fee</code> with <code>.env</code> on line 22; the file remained tracked. Two commits, one secret-bearing file, in every clone.</p>
 <h3>5.2 Migrations</h3>
 <p>Five migration files, dated 11 June to 15 July 2025, all applied in production (every object they create is in the dump). Seven objects in production that no migration creates (table in 3.13). Last migration 15 July; the dump is dated 19 September; the two production-only tables were created in that gap through the dashboard. The repository cannot rebuild production.</p>
 <h3>5.3 CI</h3>
