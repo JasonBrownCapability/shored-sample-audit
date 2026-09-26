@@ -101,10 +101,14 @@ footer {
   color: var(--muted);
   font-size: 0.9rem;
 }
-/* Wide tables (five or more columns) leave the text column on a desktop and wrap their cells,
-   so the page never scrolls sideways; on a narrow screen each row becomes a stacked card. */
-.table-wrap.wide { width: min(100vw - 2rem, 78rem); margin-left: calc(50% - min(100vw - 2rem, 78rem) / 2); overflow: visible; }
-.table-wrap.wide table { table-layout: fixed; font-size: 0.82rem; line-height: 1.4; }
+/* Dense tables (four or more columns) stay inside the text column with fixed column widths and
+   wrapping cells, so the page never scrolls sideways; on a narrow screen each row becomes a card. */
+.table-wrap.wide { overflow: visible; }
+.table-wrap.wide table { table-layout: fixed; font-size: 0.84rem; line-height: 1.4; }
+.table-wrap.wide.cols-4 th:nth-child(1) { width: 5%; }
+.table-wrap.wide.cols-4 th:nth-child(2) { width: 30%; }
+.table-wrap.wide.cols-4 th:nth-child(3) { width: 30%; }
+.table-wrap.wide.cols-4 th:nth-child(4) { width: 35%; }
 .table-wrap.wide th { white-space: normal; vertical-align: bottom; }
 .table-wrap.wide td, .table-wrap.wide th { overflow-wrap: anywhere; vertical-align: top; }
 .table-wrap.wide.cols-6 th:nth-child(1) { width: 3.5%; }
@@ -113,8 +117,8 @@ footer {
 .table-wrap.wide.cols-6 th:nth-child(4) { width: 21%; }
 .table-wrap.wide.cols-6 th:nth-child(5) { width: 24%; }
 .table-wrap.wide.cols-6 th:nth-child(6) { width: 6.5%; }
-@media (max-width: 900px) {
-  .table-wrap.wide { width: auto; margin-left: 0; }
+@media (max-width: 700px) {
+  .table-wrap.wide { width: auto; }
   .table-wrap.wide table, .table-wrap.wide tbody, .table-wrap.wide tr, .table-wrap.wide td { display: block; width: 100%; }
   .table-wrap.wide thead { display: none; }
   .table-wrap.wide tr { border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0 0 0.8rem; background: none; }
@@ -156,14 +160,14 @@ def first_heading(md_text: str) -> str:
 
 
 def wrap_tables(rendered: str) -> str:
-    """Wrap every table. Narrow tables scroll sideways if they must. Wide tables (five or more
+    """Wrap every table. Narrow tables scroll sideways if they must. Dense tables (four or more
     columns) get the .wide class, a .cols-N class for column widths, and a data-label on every
     cell so the CSS can stack each row as a card on a narrow screen."""
 
     def one(match: "re.Match[str]") -> str:
         inner = match.group(1)
         headers = [re.sub(r"<[^>]+>", "", h).strip() for h in re.findall(r"<th[^>]*>(.*?)</th>", inner, flags=re.S)]
-        if len(headers) < 5:
+        if len(headers) < 4:
             return f'<div class="table-wrap"><table>{inner}</table></div>'
 
         def label_row(row_match: "re.Match[str]") -> str:
