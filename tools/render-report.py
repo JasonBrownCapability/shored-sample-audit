@@ -29,7 +29,7 @@ CSS = """
   --fg: #1c1f24;
   --muted: #5b6270;
   --heading: #12315c;
-  --accent: #b5541c;
+  --accent: #1d6b5a;
   --rule: #e2e4e8;
   --code-bg: #f1f2f4;
   --table-stripe: #f5f6f8;
@@ -41,7 +41,7 @@ CSS = """
     --fg: #e6e8eb;
     --muted: #9aa3b2;
     --heading: #9dbce8;
-    --accent: #e08a52;
+    --accent: #5fb3a1;
     --rule: #2b313b;
     --code-bg: #1d222a;
     --table-stripe: #191d24;
