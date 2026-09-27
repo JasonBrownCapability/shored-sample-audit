@@ -265,10 +265,18 @@ def cover_and_sections(body: str) -> str:
     tbl = re.search(r"<table>(.*?)</table>", head, flags=re.S)
     if tbl:
         rows = re.findall(r"<tr>\s*<td>(.*?)</td>\s*<td>(.*?)</td>\s*</tr>", tbl.group(1), flags=re.S)
-        cells = []
+        short, wide = [], []
         for k, v in rows:
-            wide = " wide" if len(re.sub(r"<[^>]+>", "", v)) > 90 else ""
-            cells.append(f'<div class="{wide.strip()}"><dt>{k}</dt><dd>{v}</dd></div>')
+            cell = (k, v)
+            (wide if len(re.sub(r"<[^>]+>", "", v)) > 90 else short).append(cell)
+        # Short cells first so they pair up two to a row; wide cells span the full width after them.
+        # If the short count is odd, the last one spans the width too, so the grid never shows a gap.
+        cells = []
+        for i, (k, v) in enumerate(short):
+            cls = "wide" if (i == len(short) - 1 and len(short) % 2 == 1) else ""
+            cells.append(f'<div class="{cls}"><dt>{k}</dt><dd>{v}</dd></div>')
+        for k, v in wide:
+            cells.append(f'<div class="wide"><dt>{k}</dt><dd>{v}</dd></div>')
         meta_html = f'<dl class="meta">{"".join(cells)}</dl>'
     cover = (
         '<section class="cover"><div class="inner">'

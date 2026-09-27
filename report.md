@@ -51,7 +51,7 @@ Worst first. "Open" means anyone can do it today. Where each rule lives, file an
 
 | # | The rule | If it breaks | Fix (size) |
 |---|---|---|---|
-| 1 | The service-role key never reaches the browser | `.env:4`, `src/integrations/supabase/admin.ts:8-10`, `src/pages/admin/Overview.tsx:2,12,20` | Open. Every row of every table readable and writable; Auth admin API open | Revoke, delete the admin client, rebuild `/admin` as an edge function behind a `platform_admins` table; CI grep that fails on `VITE_*SECRET|SERVICE_ROLE|API_KEY` | M |
+| 1 | The service-role key never reaches the browser | Open. Every row of every table readable and writable; Auth admin API open | Revoke, delete the admin client, rebuild `/admin` as an edge function behind a `platform_admins` table; CI grep that fails on any `VITE_` name containing SECRET, SERVICE_ROLE or API_KEY (M) |
 | 2 | Bookings are visible only to the studio that owns them | Open. Name, email, phone and notes of every booking at every studio readable; any booking can be confirmed, cancelled or deleted by anyone | Drop the policy; move the write into `create_booking()`, the seat count into a view, the manage page into `get_booking_by_token()` (L) |
 | 3 | Customers are visible only to their own studio | Open. `rpc/lookup_customer` with `p_email = '%'` returns every customer row in the database, 1,000 per page | Drop the function; revoke default execute on new functions (S) |
 | 4 | Gift-voucher codes and balances are visible only to their studio | Open. Every unredeemed code, balance and purchaser email readable; free classes at any studio | Drop the read policy; replace with `validate_voucher(code, studio_id)` exact-match function (S) |
