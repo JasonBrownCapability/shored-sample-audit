@@ -570,19 +570,19 @@ Five migration files, dated 11 June to 15 July 2025, all applied in production (
 
 ## 6. Recommended hardening sprint
 
-Fixed total, in an order where each day leaves production better than the morning. Sizes: S half a day, M one day, L two days.
+Fixed total, seven steps in an order where each day leaves production better than the morning. Days are the sprint days each step takes.
 
-| Day | Item | Size | Closes |
+| Step | Item | Days | Closes |
 |---|---|---|---|
-| 1 | Revoke and rotate the three secrets; `git rm --cached .env`; `.env.example`; delete `admin.ts`; `describe-session` edge function; `admin-overview` edge function with `platform_admins`; secret grep and gitleaks in CI | L | 3.1, 3.6, 3.7 |
-| 3 | RLS repair migration: drop `bookings_public_all`, waitlist RLS, drop `lookup_customer`, revoke default execute, `validate_voucher()`, `get_booking_by_token()` | M | 3.2, 3.3, 3.4, 3.5 |
-| 4 | `create_booking()` and `session_availability`; booking form, seat counters and manage page rewired; `BookingForm.tsx` sends no money and no token | L | 3.8, 3.9, 3.10 and the client half of 3.2 |
-| 6 | Confirmation email from a database webhook; recipients from the row; id-only logging in both functions; exported handlers with Deno tests and a console spy | M | 3.11, 3.12 |
-| 7 | Baseline migration for the seven production-only objects; CI job that resets from migrations and diffs against production; `npm test` in CI; actions pinned by SHA | M | 3.13, Tier 2 promotion, 5.3 |
-| 8 | RLS test suite against a local Supabase: anon, a studio owner and a second owner against every policy touched above, 14 cases | L | Holds 3.2 to 3.5 and 3.8 to 3.10 at Tier 2 |
-| 10 | Email lower-case constraint and clean-up; `.gitignore` and README corrected (`README.md:35-36` currently claims RLS on every important table) | S | 3.14 |
+| 1 | Revoke and rotate the three secrets; `git rm --cached .env`; `.env.example`; delete `admin.ts`; `describe-session` edge function; `admin-overview` edge function with `platform_admins`; secret grep and gitleaks in CI | 1 to 2 | 3.1, 3.6, 3.7 |
+| 2 | RLS repair migration: drop `bookings_public_all`, waitlist RLS, drop `lookup_customer`, revoke default execute, `validate_voucher()`, `get_booking_by_token()` | 3 | 3.2, 3.3, 3.4, 3.5 |
+| 3 | `create_booking()` and `session_availability`; booking form, seat counters and manage page rewired; `BookingForm.tsx` sends no money and no token | 4 to 5 | 3.8, 3.9, 3.10 and the client half of 3.2 |
+| 4 | Confirmation email from a database webhook; recipients from the row; id-only logging in both functions; exported handlers with Deno tests and a console spy | 6 | 3.11, 3.12 |
+| 5 | Baseline migration for the seven production-only objects; CI job that resets from migrations and diffs against production; `npm test` in CI; actions pinned by SHA | 7 | 3.13, Tier 2 promotion, 5.3 |
+| 6 | RLS test suite against a local Supabase: anon, a studio owner and a second owner against every policy touched above, 14 cases | 8 to 9 | Holds 3.2 to 3.5 and 3.8 to 3.10 at Tier 2 |
+| 7 | Email lower-case constraint and clean-up; `.gitignore` and README corrected (`README.md:35-36` currently claims RLS on every important table) | 10, half a day | 3.14 |
 
-Nine and a half days. Fixed total £4,500 ($6,000), the sprint price for up to ten days, with the £550 audit fee credited: £3,950 payable. What you get for it: fifteen rules on trust become seven mechanisms, one view, one RPC and fourteen tests, and you keep building in Lovable throughout, because every change lands as a reviewed pull request and CI now refuses the mistakes that produced this list. If day 8 runs long, the test count shrinks, not the mechanisms.
+Nine and a half days. Fixed total £4,500 ($6,000), the sprint price for up to ten days, with the £550 audit fee credited: £3,950 payable. What you get for it: fifteen rules on trust become seven mechanisms, one view, one RPC and fourteen tests, and you keep building in Lovable throughout, because every change lands as a reviewed pull request and CI now refuses the mistakes that produced this list. If step 6 runs long, the test count shrinks, not the mechanisms.
 
 ## Appendix: the three tiers, for a non-technical reader
 
