@@ -73,11 +73,13 @@ pre {
   color: #e6ebf2;
   padding: 1rem 1.15rem;
   border-radius: 0.75rem;
-  overflow-x: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   margin: 1.1rem 0 1.4rem;
   line-height: 1.5;
 }
-pre code { background: none; padding: 0; color: inherit; font-size: 0.82rem; overflow-wrap: normal; }
+pre code { background: none; padding: 0; color: inherit; font-size: 0.82rem; white-space: inherit; }
 blockquote {
   margin: 1.2rem 0;
   padding: 0.75rem 1.1rem;
@@ -159,7 +161,8 @@ td code { white-space: normal; }
   .table-wrap.wide tr { border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.7rem 0.9rem; margin: 0 0 0.8rem; background: #fff !important; }
   .table-wrap.wide td { border: 0; padding: 0.3rem 0; }
   .table-wrap.wide td::before { content: attr(data-label); display: block; font-weight: 600; color: var(--muted-foreground); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.1rem; }
-  .table-wrap.wide.numbered td:first-child { color: var(--accent); }
+  .table-wrap.wide.numbered td:first-child { color: var(--accent); padding: 0 0 0.35rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; }
+  .table-wrap.wide.numbered td:first-child::before { content: "Finding "; display: inline; font-weight: 700; color: var(--accent); text-transform: none; letter-spacing: 0; font-size: 0.8rem; margin: 0; }
 }
 
 /* Footer, as the site's: navy, wordmark, small print. */
