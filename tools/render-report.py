@@ -24,7 +24,7 @@ from pathlib import Path
 import markdown
 
 BRAND = "Shored"
-SITE = "https://shored.dev"
+SITE = "https://www.shored.dev"
 FOOTER_NOTE = "Sample report on a synthetic codebase. Meadowlark, its founder and every key in its repository are fictional."
 LEGAL = "Shored is a trading name of Capability Systems Ltd, registered in England and Wales."
 
