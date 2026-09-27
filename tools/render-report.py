@@ -105,8 +105,9 @@ footer {
    wrapping cells, so the page never scrolls sideways; on a narrow screen each row becomes a card. */
 .table-wrap.wide { overflow: visible; }
 .table-wrap.wide table { table-layout: fixed; font-size: 0.84rem; line-height: 1.4; }
-.table-wrap.wide.cols-4 th:nth-child(1) { width: 5%; }
-.table-wrap.wide.cols-4 th:nth-child(2) { width: 30%; }
+.table-wrap.wide.cols-4 th:nth-child(1) { width: 2.6rem; }
+.table-wrap.wide td:first-child, .table-wrap.wide th:first-child { white-space: nowrap; overflow-wrap: normal; }
+.table-wrap.wide.cols-4 th:nth-child(2) { width: 29%; }
 .table-wrap.wide.cols-4 th:nth-child(3) { width: 30%; }
 .table-wrap.wide.cols-4 th:nth-child(4) { width: 35%; }
 .table-wrap.wide th { white-space: normal; vertical-align: bottom; }
