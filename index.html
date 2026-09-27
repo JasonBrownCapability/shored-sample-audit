@@ -107,7 +107,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
 .sec .inner { max-width: 56rem; margin: 0 auto; }
 .sec .inner > p, .sec .inner > ul, .sec .inner > ol, .sec .inner > blockquote { max-width: 46rem; }
 .sec h2 { margin-bottom: 1.4rem; }
-.sec h2 .num { color: var(--accent); margin-right: 0.5rem; }
+.sec h2 .num { color: var(--accent); margin-right: 0.25rem; }
 .sec.callout .inner { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 0.75rem; padding: 2rem 2rem 1.4rem; }
 .sec.callout .inner > p, .sec.callout .inner > ul, .sec.callout .inner > ol { max-width: none; }
 
@@ -120,14 +120,17 @@ tbody tr:nth-child(even) { background: var(--section-alt); }
 tbody tr:last-child td { border-bottom: 0; }
 td code { white-space: normal; }
 .table-wrap.wide table { table-layout: fixed; font-size: 0.86rem; line-height: 1.45; }
-.table-wrap.wide th { white-space: normal; vertical-align: bottom; }
+.table-wrap.wide th { white-space: nowrap; vertical-align: bottom; }
 .table-wrap.wide td, .table-wrap.wide th { overflow-wrap: anywhere; }
-.table-wrap.wide td:first-child, .table-wrap.wide th:first-child { white-space: nowrap; overflow-wrap: normal; font-weight: 600; color: var(--accent); }
-.table-wrap.wide thead th:first-child { color: var(--primary-foreground); }
-.table-wrap.wide.cols-4 th:nth-child(1) { width: 3rem; }
-.table-wrap.wide.cols-4 th:nth-child(2) { width: 29%; }
-.table-wrap.wide.cols-4 th:nth-child(3) { width: 30%; }
-.table-wrap.wide.cols-4 th:nth-child(4) { width: 35%; }
+.table-wrap.wide.numbered td:first-child, .table-wrap.wide.numbered th:first-child { white-space: nowrap; overflow-wrap: normal; font-weight: 600; color: var(--accent); }
+.table-wrap.wide.numbered thead th:first-child { color: var(--primary-foreground); }
+.table-wrap.wide.numbered.cols-4 th:nth-child(1) { width: 3rem; }
+.table-wrap.wide.numbered.cols-4 th:nth-child(2) { width: 29%; }
+.table-wrap.wide.numbered.cols-4 th:nth-child(3) { width: 30%; }
+.table-wrap.wide.numbered.cols-4 th:nth-child(4) { width: 35%; }
+/* Other dense tables: first column takes the room its content needs, the rest share. */
+.table-wrap.wide:not(.numbered) table { table-layout: auto; }
+.table-wrap.wide:not(.numbered) td:first-child { font-weight: 500; }
 @media (max-width: 700px) {
   .table-wrap.wide { border: 0; background: none; }
   .table-wrap.wide table, .table-wrap.wide tbody, .table-wrap.wide tr, .table-wrap.wide td { display: block; width: 100%; }
@@ -135,7 +138,7 @@ td code { white-space: normal; }
   .table-wrap.wide tr { border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.7rem 0.9rem; margin: 0 0 0.8rem; background: #fff !important; }
   .table-wrap.wide td { border: 0; padding: 0.3rem 0; }
   .table-wrap.wide td::before { content: attr(data-label); display: block; font-weight: 600; color: var(--muted-foreground); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.1rem; }
-  .table-wrap.wide td:first-child { color: var(--accent); }
+  .table-wrap.wide.numbered td:first-child { color: var(--accent); }
 }
 
 /* Footer, as the site's: navy, wordmark, small print. */
@@ -168,13 +171,13 @@ td code { white-space: normal; }
   </div>
 </header>
 <main>
-<section class="cover"><div class="inner"><span class="eyebrow">Enforcement-tier audit · sample</span><h1>Meadowlark: enforcement-tier audit</h1><p class="lede">Sample report on a synthetic codebase. Meadowlark, its founder, its studios and every key in its repository are fictional. The codebase is at <code>meadowlark/</code> in this repository. I seeded it with the mistakes AI coding agents leave behind, then wrote the report against the code, not the seed list. This is what a founder gets at the end of the £550 day.</p><dl class="meta"><div class=""><dt>Prepared for</dt><dd>The founder of Meadowlark (class bookings and deposits for small pottery studios)</dd></div><div class=""><dt>Prepared by</dt><dd>Jason Brown, Shored</dd></div><div class=""><dt>Date</dt><dd>26 September 2026</dd></div><div class=""><dt>Paths</dt><dd>Relative to the Meadowlark repository root. <code>file:12-15</code> means lines 12 to 15.</dd></div><div class="wide"><dt>Inputs</dt><dd>Repository at commit <code>e841fee</code> (42 files, 33 of them source), read-only. <code>supabase/schema-dump.sql</code>, a dump of the production schema the founder pulled on 19 September 2026. No production data was read.</dd></div><div class="wide"><dt>Stack</dt><dd>React 18, Vite, TypeScript, Tailwind, Supabase (Postgres, Auth, three Deno edge functions), Resend, OpenAI. Built with Lovable.</dd></div></dl></div></section><section class="sec"><div class="inner"><h2><span class="num">1</span>What I found</h2>
+<section class="cover"><div class="inner"><span class="eyebrow">Enforcement-tier audit · sample</span><h1>Meadowlark: enforcement-tier audit</h1><p class="lede">Sample report on a synthetic codebase. Meadowlark, its founder, its studios and every key in its repository are fictional. The codebase is at <code>meadowlark/</code> in this repository. I seeded it with the mistakes AI coding agents leave behind, then wrote the report against the code, not the seed list. This is what a founder gets at the end of the £550 day.</p><dl class="meta"><div class=""><dt>Prepared for</dt><dd>The founder of Meadowlark (class bookings and deposits for small pottery studios)</dd></div><div class=""><dt>Prepared by</dt><dd>Jason Brown, Shored</dd></div><div class=""><dt>Date</dt><dd>26 September 2026</dd></div><div class=""><dt>Paths</dt><dd>Relative to the Meadowlark repository root. <code>file:12-15</code> means lines 12 to 15.</dd></div><div class="wide"><dt>Inputs</dt><dd>Repository at commit <code>e841fee</code> (42 files, 33 of them source), read-only. <code>supabase/schema-dump.sql</code>, a dump of the production schema the founder pulled on 19 September 2026. No production data was read.</dd></div><div class="wide"><dt>Stack</dt><dd>React 18, Vite, TypeScript, Tailwind, Supabase (Postgres, Auth, three Deno edge functions), Resend, OpenAI. Built with Lovable.</dd></div></dl></div></section><section class="sec"><div class="inner"><h2><span class="num">1</span> What I found</h2>
 <p>The half of Meadowlark that studio owners use is fine. An owner cannot see another studio's classes, customers or notes, because the database will not show them. The public booking page is the problem. To get the booking form, the seat counter, the returning-customer autofill and the voucher box working without errors, four doors were opened that should have stayed shut. Anyone with the app's public key, which is anyone who has loaded the page, can read and edit every booking at every studio. A database function will hand back every customer in the system to anyone who asks. The gift voucher list is public. The waitlist has no protection at all.</p>
 <p>On top of that, the secret key that bypasses all of these protections is inside the JavaScript every visitor downloads, next to the OpenAI key, and both are in the git history.</p>
 <p>None of this needs a rewrite. Every item has a fix of between ten minutes and two days, and the lot fits in a ten-day sprint.</p>
 <p>I found 23 rules the app depends on. 7 are enforced by the database or the server, so they cannot be broken quietly. 1 is protected by a test. 15 are protected by nothing but a comment or good intentions. Of those 15, 7 are open right now, and 8 will go wrong the next time Lovable is asked to change something nearby or two customers book the same seat at once.</p>
 <p>In the rest of this report I call those three groups Tier 1, Tier 2 and Tier 3. The appendix explains them in plain words.</p>
-</div></section><section class="sec alt callout"><div class="inner"><h2><span class="num">2</span>Do this today</h2>
+</div></section><section class="sec alt callout"><div class="inner"><h2><span class="num">2</span> Do this today</h2>
 <p>Revoke the secret key that is in the browser bundle.</p>
 <p><code>.env:4</code> holds <code>VITE_SUPABASE_SERVICE_ROLE_KEY</code>. Anything prefixed <code>VITE_</code> is compiled into the JavaScript every visitor downloads, and <code>src/integrations/supabase/admin.ts:8-10</code> uses it to build a client that bypasses row-level security. Anyone who opens developer tools on <code>/book/&lt;any-studio&gt;</code> can copy the key, then read, change or delete every row in every table and manage users through the Auth admin API. The <code>/admin</code> check at <code>src/App.tsx:15-27</code> only decides which component to show. The key is in the bundle either way.</p>
 <p>About 20 minutes:</p>
@@ -191,9 +194,9 @@ td code { white-space: normal; }
 <li>Rotate the OpenAI key at platform.openai.com and remove <code>VITE_OPENAI_API_KEY</code> from the same three places. The "Write it for me" button stops working until the sprint. If you would rather keep the button, set a hard monthly limit on the OpenAI account today instead.</li>
 </ul>
 <p>The bookings policy (finding 2) is the one open hole I cannot close in ten minutes without breaking the booking page. Section 3.2 gives you an interim option and what it costs.</p>
-</div></section><section class="sec"><div class="inner"><h2><span class="num">3</span>Tier 3: protected by nothing but a comment</h2>
+</div></section><section class="sec"><div class="inner"><h2><span class="num">3</span> Tier 3: protected by nothing but a comment</h2>
 <p>Worst first. "Open" means anyone can do it today. Where each rule lives, file and line, is in its own section below. Sizes are for the fix: S is half a day, M one day, L two days.</p>
-<div class="table-wrap wide cols-4"><table>
+<div class="table-wrap wide cols-4 numbered"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -559,7 +562,7 @@ alter table public.customers
 <p>I looked for <code>lower(</code> or <code>citext</code> on <code>customers.email</code> (only inside the trigger) and a check constraint (none).</p>
 <h3>3.15 One reminder per booking (leave as is)</h3>
 <p><code>session-reminders/index.ts:24-26</code> selects due bookings, line 37 onwards sends, and line 49 marks <code>reminder_sent_at</code> afterwards. Two overlapping runs would both send. The function runs once a day from cron behind a secret (<code>session-reminders/index.ts:7,10</code>), so the cost is one duplicate email in an unlikely case. I am leaving it alone. The one-line claim (<code>update ... set reminder_sent_at = now() where id = ... and reminder_sent_at is null returning id</code>, then send only if a row came back) is here if the schedule ever moves to minutes.</p>
-</div></section><section class="sec alt"><div class="inner"><h2><span class="num">4</span>Tier 1 and Tier 2: what already holds</h2>
+</div></section><section class="sec alt"><div class="inner"><h2><span class="num">4</span> Tier 1 and Tier 2: what already holds</h2>
 <p>I checked each of these by reading the mechanism or the test, not the comment next to it.</p>
 <p>Tier 1, enforced by a mechanism:</p>
 <ol>
@@ -576,7 +579,7 @@ alter table public.customers
 <li>Money is stored in pence and displayed as pounds with two decimals. <code>src/lib/format.test.ts:5-8</code> asserts <code>formatPence(4500) === "£45.00"</code>, <code>805 → "£8.05"</code>, <code>0 → "£0.00"</code>, and I checked they would fail on the plausible mistakes. It is the only test in the repository and CI does not run it (<code>build.yml</code> has no <code>npm test</code>), so today it holds on the developer's machine only. Adding <code>- run: npm test</code> takes five minutes.</li>
 </ol>
 <p>That is the whole list. Seven mechanisms and one test against fifteen rules on trust.</p>
-</div></section><section class="sec"><div class="inner"><h2><span class="num">5</span>Secrets, migrations, CI</h2>
+</div></section><section class="sec"><div class="inner"><h2><span class="num">5</span> Secrets, migrations, CI</h2>
 <h3>5.1 Secrets</h3>
 <p>Current tree:</p>
 <div class="table-wrap wide cols-4"><table>
@@ -602,7 +605,7 @@ alter table public.customers
 <p>Five migration files, dated 11 June to 15 July 2025, all applied in production (every object they create is in the dump). Seven objects in production that no migration creates (table in 3.13). The last migration is 15 July and the dump is dated 19 September. The two production-only tables were created in that gap through the dashboard. The repository cannot rebuild production.</p>
 <h3>5.3 CI</h3>
 <p><code>.github/workflows/build.yml</code> runs <code>npm ci</code> and <code>npm run build</code> (lines 17-18) on push and pull request. It does not run <code>npm test</code> (defined at <code>package.json:12</code>), does not touch the database, and pins its two actions by tag (<code>build.yml:12-13</code>), so a compromised <code>v4</code> tag would run in your CI with the repository's token. Nothing in CI goes red if any finding in section 3 comes back. After the sprint, five things will: the secret grep, gitleaks, <code>npm test</code>, the schema diff and the RLS suite.</p>
-</div></section><section class="sec alt"><div class="inner"><h2><span class="num">6</span>Recommended hardening sprint</h2>
+</div></section><section class="sec alt"><div class="inner"><h2><span class="num">6</span> Recommended hardening sprint</h2>
 <p>Fixed total, in an order where each day leaves production better than the morning. Sizes: S half a day, M one day, L two days.</p>
 <div class="table-wrap wide cols-4"><table>
 <thead>

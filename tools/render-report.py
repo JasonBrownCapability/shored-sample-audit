@@ -128,7 +128,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
 .sec .inner { max-width: 56rem; margin: 0 auto; }
 .sec .inner > p, .sec .inner > ul, .sec .inner > ol, .sec .inner > blockquote { max-width: 46rem; }
 .sec h2 { margin-bottom: 1.4rem; }
-.sec h2 .num { color: var(--accent); margin-right: 0.5rem; }
+.sec h2 .num { color: var(--accent); margin-right: 0.25rem; }
 .sec.callout .inner { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 0.75rem; padding: 2rem 2rem 1.4rem; }
 .sec.callout .inner > p, .sec.callout .inner > ul, .sec.callout .inner > ol { max-width: none; }
 
@@ -141,14 +141,17 @@ tbody tr:nth-child(even) { background: var(--section-alt); }
 tbody tr:last-child td { border-bottom: 0; }
 td code { white-space: normal; }
 .table-wrap.wide table { table-layout: fixed; font-size: 0.86rem; line-height: 1.45; }
-.table-wrap.wide th { white-space: normal; vertical-align: bottom; }
+.table-wrap.wide th { white-space: nowrap; vertical-align: bottom; }
 .table-wrap.wide td, .table-wrap.wide th { overflow-wrap: anywhere; }
-.table-wrap.wide td:first-child, .table-wrap.wide th:first-child { white-space: nowrap; overflow-wrap: normal; font-weight: 600; color: var(--accent); }
-.table-wrap.wide thead th:first-child { color: var(--primary-foreground); }
-.table-wrap.wide.cols-4 th:nth-child(1) { width: 3rem; }
-.table-wrap.wide.cols-4 th:nth-child(2) { width: 29%; }
-.table-wrap.wide.cols-4 th:nth-child(3) { width: 30%; }
-.table-wrap.wide.cols-4 th:nth-child(4) { width: 35%; }
+.table-wrap.wide.numbered td:first-child, .table-wrap.wide.numbered th:first-child { white-space: nowrap; overflow-wrap: normal; font-weight: 600; color: var(--accent); }
+.table-wrap.wide.numbered thead th:first-child { color: var(--primary-foreground); }
+.table-wrap.wide.numbered.cols-4 th:nth-child(1) { width: 3rem; }
+.table-wrap.wide.numbered.cols-4 th:nth-child(2) { width: 29%; }
+.table-wrap.wide.numbered.cols-4 th:nth-child(3) { width: 30%; }
+.table-wrap.wide.numbered.cols-4 th:nth-child(4) { width: 35%; }
+/* Other dense tables: first column takes the room its content needs, the rest share. */
+.table-wrap.wide:not(.numbered) table { table-layout: auto; }
+.table-wrap.wide:not(.numbered) td:first-child { font-weight: 500; }
 @media (max-width: 700px) {
   .table-wrap.wide { border: 0; background: none; }
   .table-wrap.wide table, .table-wrap.wide tbody, .table-wrap.wide tr, .table-wrap.wide td { display: block; width: 100%; }
@@ -156,7 +159,7 @@ td code { white-space: normal; }
   .table-wrap.wide tr { border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.7rem 0.9rem; margin: 0 0 0.8rem; background: #fff !important; }
   .table-wrap.wide td { border: 0; padding: 0.3rem 0; }
   .table-wrap.wide td::before { content: attr(data-label); display: block; font-weight: 600; color: var(--muted-foreground); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.1rem; }
-  .table-wrap.wide td:first-child { color: var(--accent); }
+  .table-wrap.wide.numbered td:first-child { color: var(--accent); }
 }
 
 /* Footer, as the site's: navy, wordmark, small print. */
@@ -245,7 +248,8 @@ def wrap_tables(rendered: str) -> str:
 
         head, sep, body_html = inner.partition("<tbody>")
         body_html = re.sub(r"<tr>(.*?)</tr>", label_row, body_html, flags=re.S)
-        return f'<div class="table-wrap wide cols-{len(headers)}"><table>{head}{sep}{body_html}</table></div>'
+        numbered = " numbered" if headers and headers[0].strip() == "#" else ""
+        return f'<div class="table-wrap wide cols-{len(headers)}{numbered}"><table>{head}{sep}{body_html}</table></div>'
 
     return re.sub(r"<table>(.*?)</table>", one, rendered, flags=re.S)
 
@@ -293,7 +297,7 @@ def cover_and_sections(body: str) -> str:
         heading = h2.group(1) if h2 else ""
         num = re.match(r"(\d+)\.\s+(.*)", heading)
         if num:
-            heading_html = f'<span class="num">{num.group(1)}</span>{num.group(2)}'
+            heading_html = f'<span class="num">{num.group(1)}</span> {num.group(2)}'
         else:
             heading_html = heading
         rest = sec[h2.end():] if h2 else sec
