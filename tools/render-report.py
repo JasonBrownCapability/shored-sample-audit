@@ -182,9 +182,30 @@ td code { white-space: normal; }
   .meta { grid-template-columns: 1fr; }
 }
 @media print {
-  .site-header { position: static; }
-  .sec, .cover { padding: 1.5rem 0; }
-  pre { color: #000; background: #f1f4f8; }
+  body { font-size: 10.5pt; line-height: 1.5; }
+  .site-header { position: static; border-bottom: 1px solid var(--border); }
+  .site-header .bar { padding: 0.6rem 0; }
+  .cover { padding: 3rem 0 2rem; page-break-after: always; }
+  .cover .inner, .sec .inner { max-width: none; }
+  .cover h1 { font-size: 2.2rem; }
+  .sec { padding: 1.2rem 0 0.4rem; }
+  .sec.alt { background: none; }
+  .sec.callout .inner { padding: 1rem 1.2rem 0.4rem; }
+  h2 { font-size: 1.5rem; margin-top: 0.6rem; page-break-after: avoid; }
+  h3 { page-break-after: avoid; }
+  p, li { orphans: 3; widows: 3; }
+  tr, pre, blockquote, .meta > div, .table-wrap.wide tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  table { font-size: 8.5pt; }
+  .table-wrap.wide table { font-size: 8.5pt; }
+  pre { color: #1c1f24; background: #f1f4f8; border: 1px solid var(--border); font-size: 8pt; }
+  pre code { font-size: 8pt; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+  .site-footer { background: none; color: var(--foreground); border-top: 1px solid var(--border); }
+  .site-footer .inner { padding: 1rem 0; }
+  .site-footer p, .site-footer .legal { color: var(--muted-foreground); }
+  .site-footer .wordmark.dark .name { color: var(--primary); }
+  .site-footer .wordmark.dark .rule { background: var(--accent); }
 }
 """
 
