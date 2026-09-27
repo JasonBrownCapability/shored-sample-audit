@@ -52,11 +52,13 @@ pre {
   color: #e6ebf2;
   padding: 1rem 1.15rem;
   border-radius: 0.75rem;
-  overflow-x: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   margin: 1.1rem 0 1.4rem;
   line-height: 1.5;
 }
-pre code { background: none; padding: 0; color: inherit; font-size: 0.82rem; overflow-wrap: normal; }
+pre code { background: none; padding: 0; color: inherit; font-size: 0.82rem; white-space: inherit; }
 blockquote {
   margin: 1.2rem 0;
   padding: 0.75rem 1.1rem;
@@ -470,8 +472,10 @@ begin
 end;
 $$;
 
-revoke execute on function public.create_booking(uuid, integer, text, text, text, text, text) from public;
-grant execute on function public.create_booking(uuid, integer, text, text, text, text, text) to anon, authenticated;
+revoke execute on function public.create_booking(uuid, integer, text, text, text, text, text)
+  from public;
+grant execute on function public.create_booking(uuid, integer, text, text, text, text, text)
+  to anon, authenticated;
 </code></pre>
 <p><code>BookingForm.tsx:77-92</code> becomes one <code>supabase.rpc("create_booking", {...})</code> call. The function derives <code>studio_id</code> from the session, so the mismatch in 3.2 cannot happen either, and it does not return <code>manage_token</code>; the confirmation email moves server-side (3.11).</p>
 <p>I looked for a trigger or check computing <code>total_pence</code> (none; the only trigger is the customer upsert at <code>init.sql:106-108</code>) and a test on the arithmetic (none; <code>format.test.ts</code> tests display only).</p>

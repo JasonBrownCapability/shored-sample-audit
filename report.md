@@ -390,8 +390,10 @@ begin
 end;
 $$;
 
-revoke execute on function public.create_booking(uuid, integer, text, text, text, text, text) from public;
-grant execute on function public.create_booking(uuid, integer, text, text, text, text, text) to anon, authenticated;
+revoke execute on function public.create_booking(uuid, integer, text, text, text, text, text)
+  from public;
+grant execute on function public.create_booking(uuid, integer, text, text, text, text, text)
+  to anon, authenticated;
 ```
 
 `BookingForm.tsx:77-92` becomes one `supabase.rpc("create_booking", {...})` call. The function derives `studio_id` from the session, so the mismatch in 3.2 cannot happen either, and it does not return `manage_token`; the confirmation email moves server-side (3.11).

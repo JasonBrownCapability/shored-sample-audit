@@ -73,11 +73,13 @@ pre {
   color: #e6ebf2;
   padding: 1rem 1.15rem;
   border-radius: 0.75rem;
-  overflow-x: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   margin: 1.1rem 0 1.4rem;
   line-height: 1.5;
 }
-pre code { background: none; padding: 0; color: inherit; font-size: 0.82rem; overflow-wrap: normal; }
+pre code { background: none; padding: 0; color: inherit; font-size: 0.82rem; white-space: inherit; }
 blockquote {
   margin: 1.2rem 0;
   padding: 0.75rem 1.1rem;
